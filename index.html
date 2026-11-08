@@ -96,7 +96,13 @@
       <div class="sec-num">Contact</div>
       <h2 id="contact-title"></h2>
       <p id="contact-text"></p>
+      <div class="reason" id="reason" hidden>
+        <button type="button" class="reason-btn" data-kind="job"><b>Hire me</b><span>For a role in your team</span></button>
+        <button type="button" class="reason-btn" data-kind="freelance"><b>Freelance project</b><span>For a one-off or ongoing project</span></button>
+      </div>
+      <p class="reason-text" id="reason-text"></p>
       <form class="contact-form" id="contact-form">
+        <input type="hidden" name="kind" value="general">
         <div class="row">
           <input name="name" placeholder="Your name" required maxlength="200">
           <input name="email" type="email" placeholder="Your email" required maxlength="200">
@@ -106,6 +112,7 @@
         <button class="btn solid" type="submit">Send message</button>
         <div class="form-note" id="form-note"></div>
       </form>
+      <div class="direct" id="direct"></div>
       <div class="or-line">or find me on</div>
       <div class="btns">
         <a id="btn-linkedin" class="btn ghost" target="_blank" rel="noopener" hidden>LinkedIn</a>
@@ -116,7 +123,7 @@
 </main>
 
 <footer>
-  <div class="wrap"><span>© <span id="yr"></span> <span class="js-name">David Caramelo</span></span><span>Angers, France</span></div>
+  <div class="wrap"><span>© <span id="yr"></span> <span class="js-name">David Caramelo</span></span><span class="js-location">Angers, France</span></div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>

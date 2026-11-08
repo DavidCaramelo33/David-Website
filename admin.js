@@ -271,56 +271,90 @@ const PROFILE_FIELDS = [
   { name: "facts", label: "Key numbers", hint: "one per line: number | label", type: "textarea", pairs: true },
   { name: "expertise", label: "Expertise", hint: "one per line", type: "textarea", lines: true },
   { name: "tools", label: "Tools", hint: "one per line", type: "textarea", lines: true },
-  { name: "languages", label: "Languages", hint: "one per line: language | level", type: "textarea", pairs: true },
-  { name: "linkedin", label: "LinkedIn link", type: "url" },
-  { name: "website", label: "Other website link", type: "url" },
-  { name: "contact_title", label: "Contact — title" },
-  { name: "contact_text", label: "Contact — text", type: "textarea" }
+  { name: "languages", label: "Languages", hint: "one per line: language | level", type: "textarea", pairs: true }
 ];
 
-async function showProfile() {
-  VT.textContent = "Profile & About"; VA.innerHTML = ""; V.onclick = null;
+const CONTACT_FIELDS = [
+  { section: "What you're open to" },
+  { name: "open_to_hire", label: "Open to job offers — visitors can contact me to hire me", type: "bool" },
+  { name: "freelance", label: "Available for freelance — visitors can send me a freelance project", type: "bool" },
+  { name: "hire_text", label: "Text for job offers", hint: "shown when a visitor picks “Hire me”", type: "textarea" },
+  { name: "freelance_text", label: "Text for freelance", hint: "shown when a visitor picks “Freelance project”", type: "textarea" },
+  { section: "Contact details shown on the website", note: "Leave a field empty to hide it." },
+  { name: "email", label: "Email", type: "email" },
+  { name: "phone", label: "Phone" },
+  { name: "location", label: "Location", hint: "e.g. Angers, France" },
+  { name: "linkedin", label: "LinkedIn link", type: "url" },
+  { name: "website", label: "Other website link", type: "url" },
+  { section: "Contact section text" },
+  { name: "contact_title", label: "Title" },
+  { name: "contact_text", label: "Text", type: "textarea" }
+];
+
+/* One form for any group of profile fields. Saving merges into the profile, so other pages' fields are kept. */
+async function showProfileForm(title, fields, savedMsg) {
+  VT.textContent = title; VA.innerHTML = ""; V.onclick = null;
   const r = await sb.from("profile").select("data").eq("id", 1).maybeSingle();
   if (fail(r, "Could not load")) return;
-  const d = { ...FALLBACK.profile, ...(r.data?.data || {}) };
+  const stored = r.data?.data || {};
+  const d = { ...FALLBACK.profile, ...stored };
   const show = f => f.pairs ? (d[f.name] || []).map(x => x.join(" | ")).join("\n") : f.lines ? (d[f.name] || []).join("\n") : d[f.name];
-  V.innerHTML = `<form class="form card" id="f">${PROFILE_FIELDS.map(f => fieldHtml(f, show(f))).join("")}
+  V.innerHTML = `<form class="form card" id="f">${fields.map(f => f.section
+      ? `<div class="form-section"><h2>${esc(f.section)}</h2>${f.note ? `<p class="muted small">${esc(f.note)}</p>` : ""}</div>`
+      : fieldHtml(f, show(f))).join("")}
     <div class="form-actions"><button class="btn" type="submit">Save changes</button></div></form>`;
   const form = document.getElementById("f");
-  form.querySelector("textarea[name=expertise]").style.minHeight = "170px";
-  form.querySelector("textarea[name=tools]").style.minHeight = "170px";
+  form.querySelectorAll("textarea[name=expertise],textarea[name=tools]").forEach(t => t.style.minHeight = "170px");
   wireImages(form, "profile");
   form.onsubmit = async e => {
     e.preventDefault();
-    const out = {};
-    PROFILE_FIELDS.forEach(f => {
-      const v = form.elements[f.name].value;
+    const fresh = await sb.from("profile").select("data").eq("id", 1).maybeSingle();
+    const out = { ...FALLBACK.profile, ...(fresh.data?.data || stored) };
+    fields.filter(f => f.name).forEach(f => {
+      const el = form.elements[f.name];
+      if (f.type === "bool") { out[f.name] = el.checked; return; }
+      const v = el.value;
       const lines = v.split("\n").map(s => s.trim()).filter(Boolean);
       out[f.name] = f.pairs ? lines.map(l => l.split("|").map(s => s.trim()).slice(0, 2)) : f.lines ? lines : v.trim();
     });
     const res = await sb.from("profile").upsert({ id: 1, data: out, updated_at: new Date().toISOString() });
-    if (!fail(res, "Save failed")) toast("Profile saved");
+    if (!fail(res, "Save failed")) toast(savedMsg);
   };
 }
+const showProfile = () => showProfileForm("Profile & About", PROFILE_FIELDS, "Profile saved");
+const showContact = () => showProfileForm("Contact info", CONTACT_FIELDS, "Contact info saved");
 
 /* ---------- messages ---------- */
+const KIND = {
+  job: { label: "Job offer", cls: "job", bell: "New job offer from" },
+  freelance: { label: "Freelance", cls: "free", bell: "New freelance request from" },
+  general: { label: "General", cls: "", bell: "New message from" }
+};
+const kindOf = m => KIND[m.kind] || KIND.general;
+let msgFilter = "all";
+
 async function showMessages() {
   VT.textContent = "Messages"; VA.innerHTML = "";
   const r = await sb.from("messages").select("*").order("created_at", { ascending: false });
   if (fail(r, "Could not load")) return;
-  const rows = r.data;
-  if (!rows.length) { V.innerHTML = `<div class="empty">No messages yet. When someone uses the contact form on your website, it will appear here.</div>`; V.onclick = null; return; }
-  V.innerHTML = `<div class="list">${rows.map((m, i) => `
+  const all = r.data;
+  if (!all.length) { V.innerHTML = `<div class="empty">No messages yet. When someone uses the contact form on your website, it will appear here.</div>`; V.onclick = null; return; }
+  const n = k => all.filter(m => (m.kind || "general") === k).length;
+  const rows = msgFilter === "all" ? all : all.filter(m => (m.kind || "general") === msgFilter);
+  const chip = (k, label, count) => `<button class="chip ${msgFilter === k ? "on" : ""}" data-filter="${k}">${label} <span>${count}</span></button>`;
+  V.innerHTML = `<div class="chips">${chip("all", "All", all.length)}${chip("job", "Job offers", n("job"))}${chip("freelance", "Freelance", n("freelance"))}${chip("general", "General", n("general"))}</div>
+    <div class="list">${rows.length ? rows.map((m, i) => `
     <div class="msg ${m.is_read ? "" : "unread"}">
-      <div class="head"><div><b>${esc(m.name)}</b> <span class="muted">· ${esc(m.email)}</span></div><span class="muted">${new Date(m.created_at).toLocaleString("en-GB")}</span></div>
+      <div class="head"><div><span class="pill kind ${kindOf(m).cls}">${kindOf(m).label}</span> <b>${esc(m.name)}</b> <span class="muted">· ${esc(m.email)}</span></div><span class="muted">${new Date(m.created_at).toLocaleString("en-GB")}</span></div>
       <p>${esc(m.message)}</p>
       <div class="acts">
-        <a class="btn sm" style="text-decoration:none" href="mailto:${encodeURIComponent(m.email)}?subject=${encodeURIComponent("Re: your message")}">Reply by email</a>
+        <a class="btn sm" style="text-decoration:none" href="mailto:${encodeURIComponent(m.email)}?subject=${encodeURIComponent(m.kind === "freelance" ? "Re: your freelance project" : m.kind === "job" ? "Re: your job opportunity" : "Re: your message")}">Reply by email</a>
         <button class="btn ghost sm" data-read="${i}">${m.is_read ? "Mark unread" : "Mark read"}</button>
         <button class="btn danger sm" data-del="${i}">Delete</button>
-      </div></div>`).join("")}</div>`;
+      </div></div>`).join("") : `<div class="empty">No messages in this category.</div>`}</div>`;
   V.onclick = async e => {
     const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.filter) { msgFilter = b.dataset.filter; return showMessages(); }
     if (b.dataset.read) { const m = rows[b.dataset.read]; await sb.from("messages").update({ is_read: !m.is_read }).eq("id", m.id); showMessages(); refreshBadge(); }
     if (b.dataset.del) {
       const m = rows[b.dataset.del];
@@ -354,11 +388,11 @@ async function refreshBell() {
   if (!lsGet("dc_visits_seen")) lsSet("dc_visits_seen", new Date().toISOString());
   const seen = lsGet("dc_visits_seen");
   const [msgs, visits] = await Promise.all([
-    sb.from("messages").select("id,name,message,created_at").eq("is_read", false).order("created_at", { ascending: false }).limit(10),
+    sb.from("messages").select("*").eq("is_read", false).order("created_at", { ascending: false }).limit(10),
     sb.from("page_views").select("visitor,created_at").gt("created_at", seen).order("created_at", { ascending: false }).limit(5000)
   ]);
   const items = [];
-  (msgs.data || []).forEach(m => items.push({ kind: "msg", when: m.created_at, title: `New message from ${m.name}`, text: m.message, go: "messages" }));
+  (msgs.data || []).forEach(m => items.push({ kind: "msg", when: m.created_at, title: `${kindOf(m).bell} ${m.name}`, text: m.message, go: "messages" }));
   const v = visits.data || [];
   if (v.length) {
     const people = new Set(v.map(x => x.visitor)).size;
@@ -415,7 +449,7 @@ async function showDashboard() {
     sb.from("page_views").select("path,referrer,visitor,created_at").gte("created_at", since).order("created_at").limit(10000),
     refreshBadge(),
     sb.from("posts").select("id", { count: "exact", head: true }).eq("published", true),
-    sb.from("messages").select("name,message,created_at,is_read").order("created_at", { ascending: false }).limit(3),
+    sb.from("messages").select("*").order("created_at", { ascending: false }).limit(3),
     sb.from("profile").select("data->>name").eq("id", 1).maybeSingle()
   ]);
   if (fail(views, "Could not load visits")) return;
@@ -473,7 +507,7 @@ async function showDashboard() {
         <div class="card"><div class="card-head"><h2>Most viewed</h2></div><div class="rows">${rows(pages)}</div></div>
         <div class="card"><div class="card-head"><h2>Traffic sources</h2></div><div class="rows">${rows(refs)}</div></div>
         <div class="card"><div class="card-head"><h2>Latest messages</h2><button class="link" data-go="messages">See all</button></div>
-          ${msgs.length ? msgs.map(m => `<div class="mini-msg ${m.is_read ? "" : "new"}"><div class="r-top"><b>${esc(m.name)}</b><span class="muted small">${short(m.created_at)}</span></div><p>${esc(m.message.slice(0, 90))}${m.message.length > 90 ? "…" : ""}</p></div>`).join("") : `<p class="muted small">No messages yet</p>`}
+          ${msgs.length ? msgs.map(m => `<div class="mini-msg ${m.is_read ? "" : "new"}"><div class="r-top"><span><span class="pill kind ${kindOf(m).cls}">${kindOf(m).label}</span> <b>${esc(m.name)}</b></span><span class="muted small">${short(m.created_at)}</span></div><p>${esc(m.message.slice(0, 90))}${m.message.length > 90 ? "…" : ""}</p></div>`).join("") : `<p class="muted small">No messages yet</p>`}
         </div>
       </div>
       <p class="foot-note">${posts.count || 0} published article${posts.count === 1 ? "" : "s"} · Your own visits while signed in are not counted</p>
@@ -487,7 +521,7 @@ async function showDashboard() {
 }
 
 /* ---------- navigation & auth ---------- */
-const VIEWS = { dashboard: showDashboard, messages: showMessages, posts: showPosts, profile: showProfile, projects: () => showList("projects"), experience: () => showList("experience"), education: () => showList("education") };
+const VIEWS = { dashboard: showDashboard, messages: showMessages, posts: showPosts, profile: showProfile, contact: showContact, projects: () => showList("projects"), experience: () => showList("experience"), education: () => showList("education") };
 function go(view) {
   document.querySelectorAll("aside [data-view]").forEach(b => b.classList.toggle("on", b.dataset.view === view));
   document.body.classList.remove("nav-open");

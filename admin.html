@@ -129,6 +129,19 @@
   .msg p{white-space:pre-wrap;color:#334155}
   .msg .acts{margin-top:12px;display:flex;gap:6px}
 
+  /* message filters & tags */
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .chip{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:6px 14px;font-size:.85rem;cursor:pointer}
+  .chip span{color:var(--muted);margin-left:4px}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .chip.on span{color:#c7d2fe}
+  .pill.kind{margin:0 6px 0 0;background:#f1f5f9;color:var(--muted)}
+  .pill.kind.job{background:#eef0ff;color:var(--accent)}
+  .pill.kind.free{background:#e0f2fe;color:#0369a1}
+  .form-section{padding-top:10px;border-top:1px solid var(--line)}
+  .form-section:first-child{padding-top:0;border-top:0}
+  .form-section h2{margin-bottom:2px}
+
   /* forms */
   .form{display:grid;gap:16px}
   label{display:grid;gap:6px;font-size:.85rem;font-weight:500}
@@ -199,6 +212,7 @@
     <button data-view="experience">Experience</button>
     <button data-view="education">Education</button>
     <button data-view="profile">Profile &amp; About</button>
+    <button data-view="contact">Contact info</button>
     <div class="spacer"></div>
     <a href="index.html" target="_blank">View website ↗</a>
     <button id="logout">Sign out</button>

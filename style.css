@@ -188,3 +188,17 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 .home-blog .see-all{margin-top:44px;text-align:center}
 @media (max-width:960px){.posts{grid-template-columns:1fr 1fr}}
 @media (max-width:680px){.posts{grid-template-columns:1fr}.article{padding:120px 16px 84px}}
+
+/* ---------- Contact: hire / freelance choice ---------- */
+.reason{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:560px;margin:0 auto 14px}
+.reason-btn{background:transparent;border:1px solid #4a4741;color:var(--bg);padding:16px 18px;text-align:left;cursor:pointer;font:inherit;transition:border-color .2s,background .2s}
+.reason-btn b{display:block;font-family:var(--serif);font-weight:500;font-size:1.3rem}
+.reason-btn span{font-size:.82rem;color:#b5afa4}
+.reason-btn:hover{border-color:var(--accent)}
+.reason-btn.on{border-color:var(--accent);background:rgba(154,123,79,.14)}
+.reason-text{color:#b5afa4;font-size:.95rem;max-width:560px;margin:0 auto 22px!important;min-height:1em}
+.direct{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:26px;font-size:.95rem}
+.direct a{color:var(--bg);border-bottom:1px solid var(--accent);padding-bottom:2px}
+.direct span{color:#6b665d}
+.direct:empty{display:none}
+@media (max-width:680px){.reason{grid-template-columns:1fr}}

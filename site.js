@@ -15,7 +15,11 @@ const FALLBACK = {
     languages: [["Portuguese", "Native"], ["English", "C2"], ["Spanish", "C2"], ["French", "B1"]],
     photo_url: "", linkedin: "", website: "https://lusitaniainvestments.fr/",
     contact_title: "Let's market something remarkable",
-    contact_text: "I'm open to roles in real estate marketing and development, remote or anywhere in France."
+    contact_text: "I'm open to roles in real estate marketing and development, remote or anywhere in France.",
+    open_to_hire: true, freelance: true,
+    hire_text: "Looking for someone to join your team in real estate marketing or development? Tell me about the role.",
+    freelance_text: "Need help marketing a property, a project or your agency? Tell me what you have in mind and your timeline.",
+    email: "", phone: "", location: "Angers, France"
   },
   experience: [
     { title: "Founder", org: "Lusitania Investments", place: "Angers, France", period: "2024 — Present", description: "Founded and built a real estate investment company connecting international investors with property opportunities in Portugal. I lead business development and the full marketing strategy: brand, website content, SEO, email marketing and social media." },
@@ -157,6 +161,26 @@ function renderHome(c) {
   const web = $("#btn-website");
   web.hidden = !p.website; web.href = safeUrl(p.website);
   document.querySelectorAll(".js-name").forEach(el => el.textContent = p.name);
+  document.querySelectorAll(".js-location").forEach(el => el.textContent = p.location || "");
+
+  // Contact: "Hire me" / "Freelance project" choice, depending on what David is open to
+  const kinds = [p.open_to_hire && "job", p.freelance && "freelance"].filter(Boolean);
+  const reason = $("#reason"), form = $("#contact-form");
+  reason.hidden = kinds.length < 2;
+  reason.querySelectorAll(".reason-btn").forEach(b => b.hidden = !kinds.includes(b.dataset.kind));
+  const pick = k => {
+    form.elements.kind.value = k || "general";
+    reason.querySelectorAll(".reason-btn").forEach(b => b.classList.toggle("on", b.dataset.kind === k));
+    $("#reason-text").textContent = k === "job" ? p.hire_text : k === "freelance" ? p.freelance_text : "";
+    form.elements.message.placeholder = k === "job" ? "Tell me about the role and your company" : k === "freelance" ? "Tell me about your project, budget and timeline" : "Your message";
+  };
+  reason.onclick = e => { const b = e.target.closest(".reason-btn"); if (b) pick(b.dataset.kind); };
+  pick(kinds.includes(form.elements.kind.value) ? form.elements.kind.value : kinds[0]);
+
+  const direct = [];
+  if (p.email) direct.push(`<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>`);
+  if (p.phone) direct.push(`<a href="tel:${esc(p.phone.replace(/[^\d+]/g, ""))}">${esc(p.phone)}</a>`);
+  $("#direct").innerHTML = direct.join(`<span>·</span>`);
   observeReveal();
 }
 
@@ -218,7 +242,8 @@ function setupContactForm() {
     const data = Object.fromEntries(new FormData(f));
     if (data.website) return; // spam trap
     note.textContent = "Sending…";
-    const r = await d.from("messages").insert({ name: data.name.trim(), email: data.email.trim(), message: data.message.trim() });
+    const kind = ["job", "freelance"].includes(data.kind) ? data.kind : "general";
+    const r = await d.from("messages").insert({ name: data.name.trim(), email: data.email.trim(), message: data.message.trim(), kind });
     if (r.error) { note.textContent = "Sorry, something went wrong. Please try LinkedIn instead."; return; }
     f.reset(); note.textContent = "Thank you, your message has been sent. I'll get back to you soon.";
   });

@@ -56,6 +56,7 @@ create table messages (
   name text not null check (char_length(name) <= 200),
   email text not null check (char_length(email) <= 200),
   message text not null check (char_length(message) <= 5000),
+  kind text not null default 'general' check (kind in ('job','freelance','general')),
   is_read boolean default false,
   created_at timestamptz default now()
 );
