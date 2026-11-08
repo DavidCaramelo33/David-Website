@@ -142,6 +142,25 @@
   .form-section:first-child{padding-top:0;border-top:0}
   .form-section h2{margin-bottom:2px}
 
+  /* contact central */
+  .cc{display:grid;gap:20px}
+  .avail{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .avail-opt{position:relative;text-align:left;border:1.5px solid var(--line);background:var(--panel);border-radius:12px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:border-color .15s,background .15s}
+  .avail-opt:hover{border-color:#c7cbe0}
+  .avail-opt.on{border-color:var(--accent);background:var(--accent-soft);cursor:default}
+  .avail-opt b{font-size:.95rem}
+  .avail-opt span:not(.adot){font-size:.8rem;color:var(--muted);line-height:1.45}
+  .avail-opt i{position:absolute;top:12px;right:12px;font-style:normal;font-size:.68rem;font-weight:600;color:#fff;background:var(--accent);padding:2px 8px;border-radius:20px}
+  .adot{width:10px;height:10px;border-radius:50%}
+  .adot.green{background:#16a34a;box-shadow:0 0 0 4px #dcfce7}.adot.blue{background:#0284c7;box-shadow:0 0 0 4px #e0f2fe}.adot.grey{background:#94a3b8;box-shadow:0 0 0 4px #f1f5f9}
+  .cc-details summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .cc-details summary::-webkit-details-marker{display:none}
+  .cc-details summary h2::after{content:" ▾";color:var(--muted);font-size:.85rem}
+  .cc-details[open] summary{margin-bottom:18px}
+  .cc-details[open] summary h2::after{content:" ▴"}
+  @media (max-width:1000px){.avail{grid-template-columns:1fr 1fr}}
+  @media (max-width:560px){.avail{grid-template-columns:1fr}}
+
   /* forms */
   .form{display:grid;gap:16px}
   label{display:grid;gap:6px;font-size:.85rem;font-weight:500}
@@ -206,13 +225,12 @@
   <aside>
     <div class="brand"><span class="brand-mark">DC</span> Admin panel</div>
     <button data-view="dashboard">Dashboard</button>
-    <button data-view="messages">Messages <span class="badge" id="unread-badge" hidden></span></button>
+    <button data-view="contact">Contact Central <span class="badge" id="unread-badge" hidden></span></button>
     <button data-view="posts">Blog posts</button>
     <button data-view="projects">Projects</button>
     <button data-view="experience">Experience</button>
     <button data-view="education">Education</button>
     <button data-view="profile">Profile &amp; About</button>
-    <button data-view="contact">Contact info</button>
     <div class="spacer"></div>
     <a href="index.html" target="_blank">View website ↗</a>
     <button id="logout">Sign out</button>

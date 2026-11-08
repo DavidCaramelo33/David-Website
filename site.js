@@ -16,10 +16,10 @@ const FALLBACK = {
     photo_url: "", linkedin: "", website: "https://lusitaniainvestments.fr/",
     contact_title: "Let's market something remarkable",
     contact_text: "I'm open to roles in real estate marketing and development, remote or anywhere in France.",
-    open_to_hire: true, freelance: true,
+    availability: "both", open_to_hire: true, freelance: true,
     hire_text: "Looking for someone to join your team in real estate marketing or development? Tell me about the role.",
     freelance_text: "Need help marketing a property, a project or your agency? Tell me what you have in mind and your timeline.",
-    email: "", phone: "", location: "Angers, France"
+    email: "", phone: "", location: "Angers, France", work_note: "Remote or relocation within France"
   },
   experience: [
     { title: "Founder", org: "Lusitania Investments", place: "Angers, France", period: "2024 — Present", description: "Founded and built a real estate investment company connecting international investors with property opportunities in Portugal. I lead business development and the full marketing strategy: brand, website content, SEO, email marketing and social media." },
@@ -105,6 +105,10 @@ async function loadContent() {
   }
 }
 
+/* ---------- availability ---------- */
+const AVAIL_LABEL = { both: "Open to work & freelance", job: "Open to work", freelance: "Available for freelance", none: "Not currently available" };
+const siteAvail = p => AVAIL_LABEL[p.availability] ? p.availability : (p.open_to_hire === false ? (p.freelance ? "freelance" : "none") : (p.freelance === false ? "job" : "both"));
+
 /* ---------- home page ---------- */
 function renderHome(c) {
   const p = c.profile;
@@ -113,7 +117,9 @@ function renderHome(c) {
   $("#hero-eyebrow").textContent = p.headline;
   $("#hero-name").innerHTML = `${esc(first)}<br><em>${esc(rest.join(" "))}</em>`;
   $("#hero-pitch").textContent = p.pitch;
-  $("#hero-status").textContent = p.status;
+  const av = siteAvail(p);
+  $("#hero-status").textContent = [AVAIL_LABEL[av], p.location, av === "none" ? "" : p.work_note].filter(Boolean).join(" · ");
+  $(".status i").className = av === "none" ? "off" : av === "freelance" ? "free" : "";
   $("#portrait").innerHTML = p.photo_url
     ? `<img src="${esc(safeUrl(p.photo_url))}" alt="${esc(p.name)}">`
     : `<div class="monogram">${esc(p.name.split(" ").map(w => w[0]).join(""))}</div>`;
@@ -164,7 +170,7 @@ function renderHome(c) {
   document.querySelectorAll(".js-location").forEach(el => el.textContent = p.location || "");
 
   // Contact: "Hire me" / "Freelance project" choice, depending on what David is open to
-  const kinds = [p.open_to_hire && "job", p.freelance && "freelance"].filter(Boolean);
+  const kinds = { both: ["job", "freelance"], job: ["job"], freelance: ["freelance"], none: [] }[av];
   const reason = $("#reason"), form = $("#contact-form");
   reason.hidden = kinds.length < 2;
   reason.querySelectorAll(".reason-btn").forEach(b => b.hidden = !kinds.includes(b.dataset.kind));

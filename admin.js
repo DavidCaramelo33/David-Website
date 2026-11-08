@@ -264,7 +264,6 @@ const PROFILE_FIELDS = [
   { name: "name", label: "Your name" },
   { name: "headline", label: "Headline", hint: "small text above your name" },
   { name: "pitch", label: "One-line pitch", type: "textarea" },
-  { name: "status", label: "Availability line", hint: "e.g. Open to work · Angers, France" },
   { name: "photo_url", label: "Your photo", type: "image" },
   { name: "about_title", label: "About — title" },
   { name: "about", label: "About — text", hint: "empty line between paragraphs", type: "textarea", big: true },
@@ -275,56 +274,70 @@ const PROFILE_FIELDS = [
 ];
 
 const CONTACT_FIELDS = [
-  { section: "What you're open to" },
-  { name: "open_to_hire", label: "Open to job offers — visitors can contact me to hire me", type: "bool" },
-  { name: "freelance", label: "Available for freelance — visitors can send me a freelance project", type: "bool" },
-  { name: "hire_text", label: "Text for job offers", hint: "shown when a visitor picks “Hire me”", type: "textarea" },
-  { name: "freelance_text", label: "Text for freelance", hint: "shown when a visitor picks “Freelance project”", type: "textarea" },
   { section: "Contact details shown on the website", note: "Leave a field empty to hide it." },
   { name: "email", label: "Email", type: "email" },
   { name: "phone", label: "Phone" },
   { name: "location", label: "Location", hint: "e.g. Angers, France" },
+  { name: "work_note", label: "Work preference", hint: "shown next to your status, e.g. Remote or relocation within France" },
   { name: "linkedin", label: "LinkedIn link", type: "url" },
   { name: "website", label: "Other website link", type: "url" },
-  { section: "Contact section text" },
+  { section: "Texts in the contact section" },
   { name: "contact_title", label: "Title" },
-  { name: "contact_text", label: "Text", type: "textarea" }
+  { name: "contact_text", label: "Intro text", type: "textarea" },
+  { name: "hire_text", label: "Text when a visitor picks “Hire me”", type: "textarea" },
+  { name: "freelance_text", label: "Text when a visitor picks “Freelance project”", type: "textarea" }
 ];
 
-/* One form for any group of profile fields. Saving merges into the profile, so other pages' fields are kept. */
-async function showProfileForm(title, fields, savedMsg) {
-  VT.textContent = title; VA.innerHTML = ""; V.onclick = null;
+/* Reads the profile; returns stored data merged over defaults */
+async function loadProfile() {
   const r = await sb.from("profile").select("data").eq("id", 1).maybeSingle();
-  if (fail(r, "Could not load")) return;
-  const stored = r.data?.data || {};
-  const d = { ...FALLBACK.profile, ...stored };
+  if (fail(r, "Could not load")) return null;
+  return { ...FALLBACK.profile, ...(r.data?.data || {}) };
+}
+/* Saves some profile fields without touching the others */
+async function saveProfile(changes) {
+  const fresh = await loadProfile(); if (!fresh) return false;
+  const res = await sb.from("profile").upsert({ id: 1, data: { ...fresh, ...changes }, updated_at: new Date().toISOString() });
+  return !fail(res, "Save failed");
+}
+
+/* One form for any group of profile fields, drawn into `box` */
+async function profileForm(box, fields, savedMsg) {
+  const d = await loadProfile(); if (!d) return;
   const show = f => f.pairs ? (d[f.name] || []).map(x => x.join(" | ")).join("\n") : f.lines ? (d[f.name] || []).join("\n") : d[f.name];
-  V.innerHTML = `<form class="form card" id="f">${fields.map(f => f.section
+  box.innerHTML = `<form class="form" id="pf">${fields.map(f => f.section
       ? `<div class="form-section"><h2>${esc(f.section)}</h2>${f.note ? `<p class="muted small">${esc(f.note)}</p>` : ""}</div>`
       : fieldHtml(f, show(f))).join("")}
     <div class="form-actions"><button class="btn" type="submit">Save changes</button></div></form>`;
-  const form = document.getElementById("f");
+  const form = box.querySelector("#pf");
   form.querySelectorAll("textarea[name=expertise],textarea[name=tools]").forEach(t => t.style.minHeight = "170px");
   wireImages(form, "profile");
   form.onsubmit = async e => {
     e.preventDefault();
-    const fresh = await sb.from("profile").select("data").eq("id", 1).maybeSingle();
-    const out = { ...FALLBACK.profile, ...(fresh.data?.data || stored) };
+    const out = {};
     fields.filter(f => f.name).forEach(f => {
-      const el = form.elements[f.name];
-      if (f.type === "bool") { out[f.name] = el.checked; return; }
-      const v = el.value;
+      const v = form.elements[f.name].value;
       const lines = v.split("\n").map(s => s.trim()).filter(Boolean);
       out[f.name] = f.pairs ? lines.map(l => l.split("|").map(s => s.trim()).slice(0, 2)) : f.lines ? lines : v.trim();
     });
-    const res = await sb.from("profile").upsert({ id: 1, data: out, updated_at: new Date().toISOString() });
-    if (!fail(res, "Save failed")) toast(savedMsg);
+    if (await saveProfile(out)) toast(savedMsg);
   };
 }
-const showProfile = () => showProfileForm("Profile & About", PROFILE_FIELDS, "Profile saved");
-const showContact = () => showProfileForm("Contact info", CONTACT_FIELDS, "Contact info saved");
+function showProfile() {
+  VT.textContent = "Profile & About"; VA.innerHTML = ""; V.onclick = null;
+  V.innerHTML = `<div class="card" id="pbox"></div>`;
+  profileForm(document.getElementById("pbox"), PROFILE_FIELDS, "Profile saved");
+}
 
-/* ---------- messages ---------- */
+/* ---------- Contact Central: availability + inbox + details ---------- */
+const AVAIL = [
+  { key: "both", title: "Open to work & freelance", text: "Visitors can offer you a job or send a freelance project.", dot: "green" },
+  { key: "job", title: "Open to work", text: "Visitors can contact you about a job. No freelance.", dot: "green" },
+  { key: "freelance", title: "Freelance only", text: "Visitors can send freelance projects. No job offers.", dot: "blue" },
+  { key: "none", title: "Not open to work", text: "No offers. Visitors can still send you a general message.", dot: "grey" }
+];
+const availOf = p => p.availability || (p.open_to_hire === false ? (p.freelance ? "freelance" : "none") : (p.freelance === false ? "job" : "both"));
+
 const KIND = {
   job: { label: "Job offer", cls: "job", bell: "New job offer from" },
   freelance: { label: "Freelance", cls: "free", bell: "New freelance request from" },
@@ -333,16 +346,44 @@ const KIND = {
 const kindOf = m => KIND[m.kind] || KIND.general;
 let msgFilter = "all";
 
-async function showMessages() {
-  VT.textContent = "Messages"; VA.innerHTML = "";
+async function showContactCentral() {
+  VT.textContent = "Contact Central"; VA.innerHTML = ""; V.onclick = null;
+  V.innerHTML = `
+    <div class="cc">
+      <section class="card"><div class="card-head"><h2>Your availability</h2><span class="muted small">Shown on your website instantly</span></div><div id="cc-avail" class="avail"></div></section>
+      <section class="card"><div class="card-head"><h2>Inbox</h2><span class="muted small" id="cc-count"></span></div><div id="cc-inbox"><p class="muted small">Loading…</p></div></section>
+      <details class="card cc-details"><summary><h2>Contact details &amp; texts</h2><span class="muted small">Email, phone, LinkedIn, contact section texts</span></summary><div id="cc-form"></div></details>
+    </div>`;
+  renderAvailability();
+  renderInbox();
+  profileForm(document.getElementById("cc-form"), CONTACT_FIELDS, "Contact details saved");
+}
+
+async function renderAvailability() {
+  const box = document.getElementById("cc-avail"); if (!box) return;
+  const p = await loadProfile(); if (!p) return;
+  const cur = availOf(p);
+  box.innerHTML = AVAIL.map(a => `<button class="avail-opt ${a.key === cur ? "on" : ""}" data-avail="${a.key}">
+      <span class="adot ${a.dot}"></span><b>${a.title}</b><span>${a.text}</span>${a.key === cur ? `<i>Current</i>` : ""}</button>`).join("");
+  box.onclick = async e => {
+    const b = e.target.closest("[data-avail]"); if (!b || b.classList.contains("on")) return;
+    const k = b.dataset.avail;
+    const ok = await saveProfile({ availability: k, open_to_hire: k === "both" || k === "job", freelance: k === "both" || k === "freelance" });
+    if (ok) { toast("Website updated: " + AVAIL.find(a => a.key === k).title); renderAvailability(); }
+  };
+}
+
+async function renderInbox() {
+  const box = document.getElementById("cc-inbox"); if (!box) return;
   const r = await sb.from("messages").select("*").order("created_at", { ascending: false });
   if (fail(r, "Could not load")) return;
-  const all = r.data;
-  if (!all.length) { V.innerHTML = `<div class="empty">No messages yet. When someone uses the contact form on your website, it will appear here.</div>`; V.onclick = null; return; }
+  const all = r.data, unread = all.filter(m => !m.is_read).length;
+  document.getElementById("cc-count").textContent = all.length ? `${all.length} message${all.length > 1 ? "s" : ""}${unread ? ` · ${unread} unread` : ""}` : "";
+  if (!all.length) { box.innerHTML = `<div class="empty">No messages yet. When someone uses the contact form on your website, it will appear here.</div>`; box.onclick = null; return; }
   const n = k => all.filter(m => (m.kind || "general") === k).length;
   const rows = msgFilter === "all" ? all : all.filter(m => (m.kind || "general") === msgFilter);
   const chip = (k, label, count) => `<button class="chip ${msgFilter === k ? "on" : ""}" data-filter="${k}">${label} <span>${count}</span></button>`;
-  V.innerHTML = `<div class="chips">${chip("all", "All", all.length)}${chip("job", "Job offers", n("job"))}${chip("freelance", "Freelance", n("freelance"))}${chip("general", "General", n("general"))}</div>
+  box.innerHTML = `<div class="chips">${chip("all", "All", all.length)}${chip("job", "Job offers", n("job"))}${chip("freelance", "Freelance", n("freelance"))}${chip("general", "General", n("general"))}</div>
     <div class="list">${rows.length ? rows.map((m, i) => `
     <div class="msg ${m.is_read ? "" : "unread"}">
       <div class="head"><div><span class="pill kind ${kindOf(m).cls}">${kindOf(m).label}</span> <b>${esc(m.name)}</b> <span class="muted">· ${esc(m.email)}</span></div><span class="muted">${new Date(m.created_at).toLocaleString("en-GB")}</span></div>
@@ -352,14 +393,14 @@ async function showMessages() {
         <button class="btn ghost sm" data-read="${i}">${m.is_read ? "Mark unread" : "Mark read"}</button>
         <button class="btn danger sm" data-del="${i}">Delete</button>
       </div></div>`).join("") : `<div class="empty">No messages in this category.</div>`}</div>`;
-  V.onclick = async e => {
+  box.onclick = async e => {
     const b = e.target.closest("button"); if (!b) return;
-    if (b.dataset.filter) { msgFilter = b.dataset.filter; return showMessages(); }
-    if (b.dataset.read) { const m = rows[b.dataset.read]; await sb.from("messages").update({ is_read: !m.is_read }).eq("id", m.id); showMessages(); refreshBadge(); }
+    if (b.dataset.filter) { msgFilter = b.dataset.filter; return renderInbox(); }
+    if (b.dataset.read) { const m = rows[b.dataset.read]; await sb.from("messages").update({ is_read: !m.is_read }).eq("id", m.id); renderInbox(); refreshBadge(); }
     if (b.dataset.del) {
       const m = rows[b.dataset.del];
       if (!confirm(`Delete the message from ${m.name}? This can't be undone.`)) return;
-      if (!fail(await sb.from("messages").delete().eq("id", m.id), "Delete failed")) { showMessages(); refreshBadge(); }
+      if (!fail(await sb.from("messages").delete().eq("id", m.id), "Delete failed")) { renderInbox(); refreshBadge(); }
     }
   };
 }
@@ -392,7 +433,7 @@ async function refreshBell() {
     sb.from("page_views").select("visitor,created_at").gt("created_at", seen).order("created_at", { ascending: false }).limit(5000)
   ]);
   const items = [];
-  (msgs.data || []).forEach(m => items.push({ kind: "msg", when: m.created_at, title: `${kindOf(m).bell} ${m.name}`, text: m.message, go: "messages" }));
+  (msgs.data || []).forEach(m => items.push({ kind: "msg", when: m.created_at, title: `${kindOf(m).bell} ${m.name}`, text: m.message, go: "contact" }));
   const v = visits.data || [];
   if (v.length) {
     const people = new Set(v.map(x => x.visitor)).size;
@@ -436,7 +477,7 @@ document.getElementById("notif-clear").onclick = async () => {
   lsSet("dc_visits_seen", new Date().toISOString());
   await sb.from("messages").update({ is_read: true }).eq("is_read", false);
   closeNotif(); await refreshBadge();
-  if (document.querySelector('aside [data-view="messages"].on') || document.querySelector('aside [data-view="dashboard"].on')) go(document.querySelector("aside [data-view].on").dataset.view);
+  if (document.querySelector('aside [data-view="contact"].on') || document.querySelector('aside [data-view="dashboard"].on')) go(document.querySelector("aside [data-view].on").dataset.view);
   toast("All caught up");
 };
 
@@ -496,7 +537,7 @@ async function showDashboard() {
         <div class="card stat"><span class="dot c1"></span><b>${week}</b><span>Views this week</span></div>
         <div class="card stat"><span class="dot c2"></span><b>${v.length}</b><span>Views · 30 days</span></div>
         <div class="card stat"><span class="dot c3"></span><b>${new Set(v.map(x => x.visitor)).size}</b><span>Unique visitors</span></div>
-        <div class="card stat clickable" data-go="messages"><span class="dot c4"></span><b>${unread}</b><span>Unread messages</span></div>
+        <div class="card stat clickable" data-go="contact"><span class="dot c4"></span><b>${unread}</b><span>Unread messages</span></div>
       </div>
       <div class="card">
         <div class="card-head"><h2>Visits</h2><span class="muted small">Last 30 days</span></div>
@@ -506,7 +547,7 @@ async function showDashboard() {
       <div class="grid3">
         <div class="card"><div class="card-head"><h2>Most viewed</h2></div><div class="rows">${rows(pages)}</div></div>
         <div class="card"><div class="card-head"><h2>Traffic sources</h2></div><div class="rows">${rows(refs)}</div></div>
-        <div class="card"><div class="card-head"><h2>Latest messages</h2><button class="link" data-go="messages">See all</button></div>
+        <div class="card"><div class="card-head"><h2>Latest messages</h2><button class="link" data-go="contact">See all</button></div>
           ${msgs.length ? msgs.map(m => `<div class="mini-msg ${m.is_read ? "" : "new"}"><div class="r-top"><span><span class="pill kind ${kindOf(m).cls}">${kindOf(m).label}</span> <b>${esc(m.name)}</b></span><span class="muted small">${short(m.created_at)}</span></div><p>${esc(m.message.slice(0, 90))}${m.message.length > 90 ? "…" : ""}</p></div>`).join("") : `<p class="muted small">No messages yet</p>`}
         </div>
       </div>
@@ -521,7 +562,7 @@ async function showDashboard() {
 }
 
 /* ---------- navigation & auth ---------- */
-const VIEWS = { dashboard: showDashboard, messages: showMessages, posts: showPosts, profile: showProfile, contact: showContact, projects: () => showList("projects"), experience: () => showList("experience"), education: () => showList("education") };
+const VIEWS = { dashboard: showDashboard, contact: showContactCentral, messages: showContactCentral, posts: showPosts, profile: showProfile, projects: () => showList("projects"), experience: () => showList("experience"), education: () => showList("education") };
 function go(view) {
   document.querySelectorAll("aside [data-view]").forEach(b => b.classList.toggle("on", b.dataset.view === view));
   document.body.classList.remove("nav-open");

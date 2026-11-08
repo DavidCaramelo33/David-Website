@@ -202,3 +202,5 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 .direct span{color:#6b665d}
 .direct:empty{display:none}
 @media (max-width:680px){.reason{grid-template-columns:1fr}}
+.status i.free{background:#4f7fa8;box-shadow:0 0 0 4px rgba(79,127,168,.18)}
+.status i.off{background:#9a958c;box-shadow:0 0 0 4px rgba(154,149,140,.18)}
