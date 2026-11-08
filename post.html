@@ -15,11 +15,12 @@
   <div class="wrap nav">
     <a href="index.html" class="logo">D<span>.</span>C</a>
     <ul>
-      <li><a href="index.html#about">About</a></li>
-      <li><a href="index.html#projects">Projects</a></li>
-      <li><a href="blog.html">Blog</a></li>
-      <li><a href="index.html#contact">Contact</a></li>
+      <li><a href="index.html#about" data-i18n="nav_about">About</a></li>
+      <li><a href="index.html#projects" data-i18n="nav_projects">Projects</a></li>
+      <li><a href="blog.html" data-i18n="nav_blog">Blog</a></li>
+      <li><a href="index.html#contact" data-i18n="nav_contact">Contact</a></li>
     </ul>
+    <div class="lang-switch" aria-label="Language"><button data-lang="en">EN</button><button data-lang="fr">FR</button></div>
     <button class="menu-btn" aria-label="Open menu"><span></span><span></span></button>
   </div>
 </header>
@@ -27,6 +28,7 @@
 <footer><div class="wrap"><span>© <span id="yr"></span> David Caramelo</span><span>Angers, France</span></div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
+<script src="i18n.js"></script>
 <script src="site.js"></script>
 </body>
 </html>

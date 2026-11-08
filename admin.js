@@ -70,6 +70,18 @@ function readForm(form, fields) {
 
 /* ---------- generic list editor (projects, experience, education) ---------- */
 const LISTS = {
+  portfolio: {
+    title: "Portfolio", folder: "portfolio",
+    sub: r => [r.category, r.link ? "has link" : ""].filter(Boolean).join(" · "),
+    fields: [
+      { name: "title", label: "Title", required: true },
+      { name: "category", label: "Category", hint: "e.g. Website, Brochure, Social media, Video, Email campaign · used for the filter buttons" },
+      { name: "image_url", label: "Picture", type: "image" },
+      { name: "description", label: "Short description", hint: "optional, shown in the pop-up", type: "textarea" },
+      { name: "link", label: "Link", hint: "optional: website, video, PDF…", type: "url" },
+      { name: "visible", label: "Visible on the website", type: "bool" }
+    ]
+  },
   projects: {
     title: "Projects", folder: "projects",
     sub: r => [r.tag, r.featured ? "Featured" : ""].filter(Boolean).join(" · "),
@@ -284,7 +296,8 @@ const PROFILE_FIELDS = [
   { name: "expertise", label: "Expertise", hint: "one per line", type: "textarea", lines: true },
   { name: "tools", label: "Tools", hint: "one per line", type: "textarea", lines: true },
   { name: "languages", label: "Languages", hint: "one per line: language | level", type: "textarea", pairs: true },
-  { name: "services", label: "Services — “What I can do for you”", hint: "one per line: title | short description · leave empty to hide the section", type: "textarea", pairs: true }
+  { name: "services", label: "Services — “What I can do for you”", hint: "one per line: title | short description · leave empty to hide the section", type: "textarea", pairs: true },
+  { name: "results", label: "Results in numbers", hint: "one per line: number | what it means, e.g. 108 | Properties marketed · leave empty to hide the section", type: "textarea", pairs: true }
 ];
 
 const CONTACT_FIELDS = [
@@ -295,6 +308,7 @@ const CONTACT_FIELDS = [
   { name: "location", label: "Location", hint: "e.g. Angers, France" },
   { name: "work_note", label: "Work preference", hint: "shown next to your status, e.g. Remote or relocation within France" },
   { name: "linkedin", label: "LinkedIn link", type: "url" },
+  { name: "booking_url", label: "Book a call link", hint: "e.g. your Calendly or Google Calendar booking page · adds a “Book a call” button", type: "url" },
   { name: "website", label: "Other website link", type: "url" },
   { section: "Texts in the contact section" },
   { name: "contact_title", label: "Title" },
@@ -325,7 +339,7 @@ async function profileForm(box, fields, savedMsg) {
       : fieldHtml(f, show(f))).join("")}
     <div class="form-actions"><button class="btn" type="submit">Save changes</button></div></form>`;
   const form = box.querySelector("#pf");
-  form.querySelectorAll("textarea[name=expertise],textarea[name=tools],textarea[name=services]").forEach(t => t.style.minHeight = "170px");
+  form.querySelectorAll("textarea[name=expertise],textarea[name=tools],textarea[name=services],textarea[name=results]").forEach(t => t.style.minHeight = "170px");
   wireImages(form, "profile");
   form.onsubmit = async e => {
     e.preventDefault();
@@ -576,8 +590,65 @@ async function showDashboard() {
   };
 }
 
+/* ---------- Translations (French) ---------- */
+async function showTranslations() {
+  VT.textContent = "Translations (FR)"; VA.innerHTML = ""; V.onclick = null;
+  V.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0">Loading…</p>`;
+  const [p, ex, pr, ed, pf] = await Promise.all([
+    loadProfile(),
+    sb.from("experience").select("*").order("sort"),
+    sb.from("projects").select("*").order("sort"),
+    sb.from("education").select("*").order("sort"),
+    sb.from("portfolio").select("*").order("sort")
+  ]);
+  if (!p) return;
+  const saved = p.fr || {};
+  const groups = [];
+  const seen = new Set();
+  const add = (group, text) => {
+    const s = String(text || "").trim();
+    if (!s || seen.has(s) || /^[\d\s·—–+.,%-]+$/.test(s) || /^https?:/.test(s)) return;
+    seen.add(s);
+    let g = groups.find(x => x.name === group); if (!g) groups.push(g = { name: group, items: [] });
+    g.items.push(s);
+  };
+  ["headline", "pitch", "about_title", "work_note"].forEach(k => add("Profile & About", p[k]));
+  String(p.about || "").split(/\n{2,}/).forEach(t => add("Profile & About", t));
+  (p.facts || []).forEach(([, l]) => add("Profile & About", l));
+  (p.highlights || []).forEach(h => add("Profile & About", h));
+  (p.services || []).forEach(([t, d]) => { add("Services", t); add("Services", d); });
+  (p.results || []).forEach(([, l]) => add("Results", l));
+  (p.expertise || []).forEach(x => add("Skills", x));
+  (p.languages || []).forEach(([l, lv]) => { add("Skills", l); add("Skills", lv); });
+  (ex.data || []).forEach(j => { add("Experience", j.title); add("Experience", j.place); add("Experience", j.description); });
+  (pr.data || []).forEach(x => { add("Projects", x.title); add("Projects", x.tag); add("Projects", x.description); });
+  (pf.data || []).forEach(x => { add("Portfolio", x.title); add("Portfolio", x.category); add("Portfolio", x.description); });
+  (ed.data || []).forEach(e => { add("Education", e.title); add("Education", e.description); });
+  ["contact_title", "contact_text", "hire_text", "freelance_text"].forEach(k => add("Contact", p[k]));
+
+  const all = groups.flatMap(g => g.items);
+  const val = s => saved[s] ?? FR_CONTENT[s] ?? "";
+  const missing = all.filter(s => !val(s)).length;
+  V.innerHTML = `
+    <div class="card tr-intro"><b>French version of your website.</b> Each text you wrote in English is on the left, its French version on the right. Visitors who pick <b>FR</b> (or whose browser is in French) see the French text. If a French box is empty, that text shows in English.
+      ${missing ? `<div class="tr-missing">${missing} text${missing > 1 ? "s" : ""} still need a French version</div>` : `<div class="tr-ok">Everything is translated ✓</div>`}</div>
+    <form id="trf" class="form">
+      ${groups.map(g => `<div class="card"><h2 style="margin-bottom:14px">${esc(g.name)}</h2>
+        ${g.items.map(s => `<div class="tr-row ${val(s) ? "" : "todo"}"><div class="tr-en">${esc(s)}</div>
+          <textarea data-src="${esc(s)}" rows="${Math.min(6, Math.max(1, Math.ceil(s.length / 70)))}" placeholder="French version…">${esc(val(s))}</textarea></div>`).join("")}
+      </div>`).join("")}
+      <div class="form-actions"><button class="btn" type="submit">Save translations</button></div>
+    </form>`;
+  document.getElementById("trf").onsubmit = async e => {
+    e.preventDefault();
+    const fr = {};
+    e.target.querySelectorAll("textarea[data-src]").forEach(t => { const v = t.value.trim(); if (v) fr[t.dataset.src] = v; });
+    if (await saveProfile({ fr })) { toast("Translations saved"); showTranslations(); }
+  };
+}
+
 /* ---------- navigation & auth ---------- */
-const VIEWS = { dashboard: showDashboard, contact: showContactCentral, messages: showContactCentral, posts: showPosts, profile: showProfile, projects: () => showList("projects"), experience: () => showList("experience"), education: () => showList("education") };
+const VIEWS = { portfolio: () => showList("portfolio"), translations: showTranslations, dashboard: showDashboard, contact: showContactCentral, messages: showContactCentral, posts: showPosts, profile: showProfile, projects: () => showList("projects"), experience: () => showList("experience"), education: () => showList("education") };
 function go(view) {
   document.querySelectorAll("aside [data-view]").forEach(b => b.classList.toggle("on", b.dataset.view === view));
   document.body.classList.remove("nav-open");

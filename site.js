@@ -27,7 +27,9 @@ const FALLBACK = {
     cv_url: "",
     hire_text: "Looking for someone to join your team in real estate marketing or development? Tell me about the role.",
     freelance_text: "Need help marketing a property, a project or your agency? Tell me what you have in mind and your timeline.",
-    email: "", business_email: "", phone: "", location: "Angers, France", work_note: "Remote or relocation within France"
+    email: "", business_email: "", phone: "", location: "Angers, France", work_note: "Remote or relocation within France",
+    results: [["108", "Properties marketed for Lusitania Investments"], ["2", "Countries connected: France & Portugal"]],
+    booking_url: ""
   },
   experience: [
     { title: "Founder", org: "Lusitania Investments", logo_url: "images/logos/lusitania.png", link: "https://lusitaniainvestments.fr/", place: "Angers, France", period: "2024 — Present", description: "Founded and built a real estate investment company connecting international investors with property opportunities in Portugal. I lead business development and the full marketing strategy: brand, website content, SEO, email marketing and social media." },
@@ -49,13 +51,16 @@ const FALLBACK = {
     { kind: "certification", title: "English C2 — IELTS Academic", logo_url: "images/logos/ielts.png", link: "https://ielts.org/", period: "2020" },
     { kind: "certification", title: "X-Honours Programme, NHL Stenden", logo_url: "images/logos/nhlstenden.png", link: "https://www.nhlstenden.com/", period: "2022", description: "Leadership development and cross-cultural business." }
   ],
+  portfolio: [
+    { title: "Lusitania Investments website", category: "Website", image_url: "images/projects/lusitania.jpg", link: "https://lusitaniainvestments.fr/", description: "" }
+  ],
   posts: []
 };
 
 /* ---------- helpers ---------- */
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const safeUrl = u => /^(https?:\/\/|mailto:|\/|\.\/|images\/|[a-z0-9-]+\.html)/i.test(u || "") ? u : "#";
-const fmtDate = d => d ? new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "";
+const fmtDate = d => d ? new Date(d).toLocaleDateString(typeof LANG !== "undefined" && LANG === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "long", year: "numeric" }) : "";
 const $ = s => document.querySelector(s);
 
 /* Tiny Markdown: ## headings, **bold**, *italic*, [links](url), ![images](url), - lists, > quotes */
@@ -93,17 +98,19 @@ async function loadContent() {
   const d = getDb();
   if (!d) return cacheGet("content") || FALLBACK;
   try {
-    const [p, ex, pr, ed, po] = await Promise.all([
+    const [p, ex, pr, ed, po, pf] = await Promise.all([
       d.from("profile").select("data").eq("id", 1).maybeSingle(),
       d.from("experience").select("*").eq("visible", true).order("sort"),
       d.from("projects").select("*").eq("visible", true).order("sort"),
       d.from("education").select("*").eq("visible", true).order("sort"),
-      d.from("posts").select("slug,title,excerpt,cover_url,tag,published_at").eq("published", true).order("published_at", { ascending: false }).limit(3)
+      d.from("posts").select("slug,title,excerpt,cover_url,tag,published_at").eq("published", true).order("published_at", { ascending: false }).limit(3),
+      d.from("portfolio").select("*").eq("visible", true).order("sort")
     ]);
     if (p.error || ex.error) throw p.error || ex.error;
     const content = {
       profile: { ...FALLBACK.profile, ...(p.data?.data || {}) },
-      experience: ex.data, projects: pr.data || [], education: ed.data || [], posts: po.data || []
+      experience: ex.data, projects: pr.data || [], education: ed.data || [], posts: po.data || [],
+      portfolio: pf.error ? FALLBACK.portfolio : (pf.data || [])
     };
     cacheSet("content", content);
     return content;
@@ -114,10 +121,10 @@ async function loadContent() {
 }
 
 /* ---------- availability ---------- */
-const AVAIL_LABEL = { both: "Open to work & freelance", job: "Open to work", freelance: "Available for freelance", none: "Not currently available" };
-const siteAvail = p => AVAIL_LABEL[p.availability] ? p.availability : (p.open_to_hire === false ? (p.freelance ? "freelance" : "none") : (p.freelance === false ? "job" : "both"));
+const AVAIL_KEYS = ["both", "job", "freelance", "none"];
+const siteAvail = p => AVAIL_KEYS.includes(p.availability) ? p.availability : (p.open_to_hire === false ? (p.freelance ? "freelance" : "none") : (p.freelance === false ? "job" : "both"));
 
-/* ---------- logos, icons, project pop-up ---------- */
+/* ---------- logos, icons, pop-up ---------- */
 const TOOLS = {
   "indesign": { name: "Adobe InDesign", logo: "indesign", url: "https://www.adobe.com/products/indesign.html" },
   "adobe": { name: "Adobe", logo: "indesign", url: "https://www.adobe.com/" },
@@ -153,103 +160,159 @@ function logoBox(url, name, link) {
   return link ? `<a class="logo-box" href="${esc(safeUrl(link))}" target="_blank" rel="noopener" title="${esc(name)}">${inner}</a>` : `<div class="logo-box">${inner}</div>`;
 }
 
-let PROJECTS = [];
-function openProject(i) {
-  const pr = PROJECTS[i]; if (!pr) return;
+/* One pop-up for projects and portfolio items */
+let POPUP_ITEMS = { project: [], portfolio: [] };
+function openItem(kind, i) {
+  const it = POPUP_ITEMS[kind][i]; if (!it) return;
   const dlg = $("#project-dialog");
+  const isVideo = /youtu|vimeo|video|drive\.google/i.test(it.link || "");
+  const title = tr(it.title), tag = tr(it.tag || it.category);
   dlg.querySelector(".dlg-body").innerHTML = `
-    ${pr.image_url
-      ? (pr.link ? `<a class="dlg-shot" href="${esc(safeUrl(pr.link))}" target="_blank" rel="noopener"><img src="${esc(safeUrl(pr.image_url))}" alt="${esc(pr.title)}"><span>Open ↗</span></a>` : `<div class="dlg-shot"><img src="${esc(safeUrl(pr.image_url))}" alt="${esc(pr.title)}"></div>`)
+    ${it.image_url
+      ? (it.link ? `<a class="dlg-shot" href="${esc(safeUrl(it.link))}" target="_blank" rel="noopener"><img src="${esc(safeUrl(it.image_url))}" alt="${esc(title)}"><span>${ui("proj_open")} ↗</span></a>` : `<div class="dlg-shot"><img src="${esc(safeUrl(it.image_url))}" alt="${esc(title)}"></div>`)
       : ""}
     <div class="dlg-text">
-      <div class="tag">${esc(pr.tag)}</div><h3>${esc(pr.title)}</h3><p>${esc(pr.description)}</p>
-      ${pr.link ? `<a class="btn solid" href="${esc(safeUrl(pr.link))}" target="_blank" rel="noopener">${/youtu|vimeo|video/i.test(pr.link) ? "Watch the video" : "Visit the website"} ↗</a>` : `<p class="muted-note">Link coming soon.</p>`}
+      ${tag ? `<div class="tag">${esc(tag)}</div>` : ""}<h3>${esc(title)}</h3>${it.description ? `<p>${esc(tr(it.description))}</p>` : ""}
+      ${it.link ? `<a class="btn solid" href="${esc(safeUrl(it.link))}" target="_blank" rel="noopener">${ui(isVideo ? "proj_watch" : "proj_visit")} ↗</a>` : (kind === "project" ? `<p class="muted-note">${ui("proj_soon")}</p>` : "")}
     </div>`;
   if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
 }
-function setupProjectDialog() {
-  const list = $("#project-list"), dlg = $("#project-dialog");
-  if (!list || !dlg) return;
-  list.addEventListener("click", e => { const card = e.target.closest("[data-project]"); if (card) openProject(card.dataset.project); });
-  list.addEventListener("keydown", e => { const card = e.target.closest("[data-project]"); if (card && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openProject(card.dataset.project); } });
+function setupDialog() {
+  const dlg = $("#project-dialog"); if (!dlg) return;
+  const wire = (el, kind, attr) => {
+    if (!el) return;
+    el.addEventListener("click", e => { const c = e.target.closest(`[${attr}]`); if (c) openItem(kind, c.getAttribute(attr)); });
+    el.addEventListener("keydown", e => { const c = e.target.closest(`[${attr}]`); if (c && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openItem(kind, c.getAttribute(attr)); } });
+  };
+  wire($("#project-list"), "project", "data-project");
+  wire($("#pf-grid"), "portfolio", "data-pf");
   dlg.addEventListener("click", e => { if (e.target === dlg || e.target.closest(".dlg-close")) dlg.close(); });
 }
 
+/* Numbers that count up when they appear: "6+", "108", "2024" */
+function countUp(el) {
+  const m = String(el.dataset.count || "").match(/^(\D*)(\d+)(.*)$/);
+  if (!m || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const [, pre, num, post] = m, target = +num;
+  const start = target >= 1900 && target <= 2100 ? target - 20 : 0;
+  const t0 = performance.now(), dur = 1400;
+  const step = now => {
+    const k = Math.min(1, (now - t0) / dur), eased = 1 - Math.pow(1 - k, 3);
+    el.textContent = pre + Math.round(start + (target - start) * eased) + post;
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+function observeCounters() {
+  const els = document.querySelectorAll("[data-count]:not(.counted)");
+  if (!("IntersectionObserver" in window)) return;
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("counted"); countUp(e.target); io.unobserve(e.target); } }), { threshold: .6 });
+  els.forEach(el => io.observe(el));
+}
+
+/* "01 — About", "02 — Services"… numbered in order, skipping hidden sections */
+function numberSections() {
+  let n = 0;
+  document.querySelectorAll("section.numbered").forEach(s => {
+    if (s.hidden) return;
+    n++;
+    const el = s.querySelector(".sec-num");
+    if (el) el.textContent = `${String(n).padStart(2, "0")} — ${ui(s.dataset.label)}`;
+  });
+}
+
 /* ---------- home page ---------- */
+let LAST_CONTENT = null;
 function renderHome(c) {
+  LAST_CONTENT = c;
   const p = c.profile;
-  document.title = `${p.name} — ${p.headline}`;
+  FR_OVERRIDES = p.fr || {};
+  applyStaticTexts();
+  document.title = `${p.name} — ${tr(p.headline)}`;
   const [first, ...rest] = p.name.split(" ");
-  $("#hero-eyebrow").textContent = p.headline;
+  $("#hero-eyebrow").textContent = tr(p.headline);
   $("#hero-name").innerHTML = `${esc(first)}<br><em>${esc(rest.join(" "))}</em>`;
-  $("#hero-pitch").textContent = p.pitch;
+  $("#hero-pitch").textContent = tr(p.pitch);
   const av = siteAvail(p);
-  $("#hero-status").textContent = [AVAIL_LABEL[av], p.location, av === "none" ? "" : p.work_note].filter(Boolean).join(" · ");
+  $("#hero-status").textContent = [ui("avail_" + av), p.location, av === "none" ? "" : tr(p.work_note)].filter(Boolean).join(" · ");
   $(".status i").className = av === "none" ? "off" : av === "freelance" ? "free" : "";
   $("#portrait").innerHTML = `<img src="${esc(safeUrl(p.photo_url || "images/david.jpg"))}" alt="${esc(p.name)}">`;
-  $("#hero-highlights").innerHTML = (p.highlights || []).map(h => `<li>${esc(h)}</li>`).join("");
+  $("#hero-highlights").innerHTML = (p.highlights || []).map(h => `<li>${esc(tr(h))}</li>`).join("");
   const cv = $("#btn-cv");
   cv.hidden = !p.cv_url; if (p.cv_url) cv.href = safeUrl(p.cv_url);
+  ["#btn-book", "#btn-book-2"].forEach(s => { const b = $(s); b.hidden = !p.booking_url; if (p.booking_url) b.href = safeUrl(p.booking_url); });
+
+  // logo strip: every company / school logo from Experience and Education
+  const seen = new Set();
+  const logos = [...c.experience.map(j => ({ url: j.logo_url, name: j.org || j.title, link: j.link })), ...c.education.map(e => ({ url: e.logo_url, name: e.title, link: e.link }))]
+    .filter(l => l.url && !seen.has(l.url) && seen.add(l.url));
+  $("#logo-strip").hidden = logos.length < 3;
+  $("#logo-row").innerHTML = logos.map(l => {
+    const img = `<img src="${esc(safeUrl(l.url))}" alt="${esc(l.name)}" title="${esc(l.name)}" loading="lazy">`;
+    return l.link ? `<a href="${esc(safeUrl(l.link))}" target="_blank" rel="noopener">${img}</a>` : `<span>${img}</span>`;
+  }).join("");
 
   const services = p.services || [];
   $("#services").hidden = !services.length;
   $("#service-list").innerHTML = services.map(([t, d], i) => `
-    <div class="service reveal"><div class="service-top"><span class="service-icon">${serviceIcon(t)}</span><span class="service-num">${String(i + 1).padStart(2, "0")}</span></div><h3>${esc(t)}</h3><p>${esc(d || "")}</p></div>`).join("");
+    <div class="service reveal"><div class="service-top"><span class="service-icon">${serviceIcon(t)}</span><span class="service-num">${String(i + 1).padStart(2, "0")}</span></div><h3>${esc(tr(t))}</h3><p>${esc(tr(d || ""))}</p></div>`).join("");
 
   $("#about-photo").innerHTML = `<img src="${esc(safeUrl(p.about_image || "images/david.jpg"))}" alt="${esc(p.name)}">`;
-  $("#about-title").textContent = p.about_title;
-  $("#about-text").innerHTML = String(p.about || "").split(/\n{2,}/).map(t => `<p>${esc(t)}</p>`).join("") +
-    `<div class="facts">${(p.facts || []).map(([n, l]) => `<div class="fact"><b>${esc(n)}</b><span>${esc(l)}</span></div>`).join("")}</div>`;
+  $("#about-title").textContent = tr(p.about_title);
+  $("#about-text").innerHTML = String(p.about || "").split(/\n{2,}/).map(t => `<p>${esc(tr(t.trim()))}</p>`).join("") +
+    `<div class="facts">${(p.facts || []).map(([n, l]) => `<div class="fact"><b data-count="${esc(n)}">${esc(n)}</b><span>${esc(tr(l))}</span></div>`).join("")}</div>`;
 
   $("#timeline").innerHTML = c.experience.map(j => `
-    <div class="job reveal"><div class="when">${esc(j.period)}</div><div class="job-body">
+    <div class="job reveal"><div class="when">${esc(tr(j.period))}</div><div class="job-body">
       ${logoBox(j.logo_url, j.org || j.title, j.link)}
-      <div><h3>${esc(j.title)}</h3>
-      <div class="where">${j.link && j.org ? `<a href="${esc(safeUrl(j.link))}" target="_blank" rel="noopener">${esc(j.org)}</a>${j.place ? " · " + esc(j.place) : ""}` : esc([j.org, j.place].filter(Boolean).join(" · "))}</div>
-      <p>${esc(j.description)}</p></div></div></div>`).join("");
+      <div><h3>${esc(tr(j.title))}</h3>
+      <div class="where">${j.link && j.org ? `<a href="${esc(safeUrl(j.link))}" target="_blank" rel="noopener">${esc(j.org)}</a>${j.place ? " · " + esc(tr(j.place)) : ""}` : esc([j.org, tr(j.place)].filter(Boolean).join(" · "))}</div>
+      <p>${esc(tr(j.description))}</p></div></div></div>`).join("");
 
-  PROJECTS = c.projects;
+  const results = p.results || [];
+  $("#results").hidden = !results.length;
+  $("#result-row").innerHTML = results.map(([n, l]) => `<div class="result reveal"><b data-count="${esc(n)}">${esc(n)}</b><span>${esc(tr(l))}</span></div>`).join("");
+
+  POPUP_ITEMS.project = c.projects;
   $("#project-list").innerHTML = c.projects.map((pr, i) => pr.featured ? `
     <article class="project featured reveal" data-project="${i}" tabindex="0"><div>
-      <div class="tag">${esc(pr.tag)}</div><h3>${esc(pr.title)}</h3><p>${esc(pr.description)}</p>
-      <span class="more">${pr.link ? "Preview &amp; visit the website" : "View details"}</span>
-    </div><div class="featured-visual">${pr.image_url ? `<img src="${esc(safeUrl(pr.image_url))}" alt="${esc(pr.title)}" loading="lazy">` : "Property marketing, from strategy to listing."}</div></article>` : `
+      <div class="tag">${esc(tr(pr.tag))}</div><h3>${esc(tr(pr.title))}</h3><p>${esc(tr(pr.description))}</p>
+      <span class="more">${ui(pr.link ? "proj_preview_site" : "proj_details")}</span>
+    </div><div class="featured-visual">${pr.image_url ? `<img src="${esc(safeUrl(pr.image_url))}" alt="${esc(tr(pr.title))}" loading="lazy">` : ui("proj_featured_ph")}</div></article>` : `
     <article class="project reveal" data-project="${i}" tabindex="0">
-      <div class="project-thumb">${pr.image_url ? `<img src="${esc(safeUrl(pr.image_url))}" alt="${esc(pr.title)}" loading="lazy">` : `<span>${esc(pr.title)}</span>`}</div>
-      <div class="tag">${esc(pr.tag)}</div><h3>${esc(pr.title)}</h3><p>${esc(pr.description)}</p>
-      <span class="more">${pr.link ? "Preview &amp; open" : "View details"}</span>
+      <div class="project-thumb">${pr.image_url ? `<img src="${esc(safeUrl(pr.image_url))}" alt="${esc(tr(pr.title))}" loading="lazy">` : `<span>${esc(tr(pr.title))}</span>`}</div>
+      <div class="tag">${esc(tr(pr.tag))}</div><h3>${esc(tr(pr.title))}</h3><p>${esc(tr(pr.description))}</p>
+      <span class="more">${ui(pr.link ? "proj_preview_open" : "proj_details")}</span>
     </article>`).join("");
 
-  const list = a => `<ul>${(a || []).map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
+  renderPortfolio(c.portfolio || []);
+
+  const list = a => `<ul>${(a || []).map(x => `<li>${esc(tr(x))}</li>`).join("")}</ul>`;
   $("#skills-expertise").innerHTML = list(p.expertise);
   $("#skills-tools").innerHTML = `<div class="tools">${(p.tools || []).flatMap(t => String(t).split("·")).map(t => t.trim()).filter(Boolean).map(t => {
     const k = Object.keys(TOOLS).find(key => t.toLowerCase().includes(key));
     if (!k) return `<span class="tool"><span class="tool-logo blank">${esc(t[0])}</span>${esc(t)}</span>`;
     const tool = TOOLS[k];
-    return `<a class="tool" href="${tool.url}" target="_blank" rel="noopener" title="Visit the official ${esc(tool.name)} website"><img class="tool-logo" src="images/logos/${tool.logo}.png" alt="">${esc(tool.name)}<span class="arrow">↗</span></a>`;
+    return `<a class="tool" href="${tool.url}" target="_blank" rel="noopener" title="${ui("tool_visit")} ${esc(tool.name)}"><img class="tool-logo" src="images/logos/${tool.logo}.png" alt="">${esc(tool.name)}<span class="arrow">↗</span></a>`;
   }).join("")}</div>`;
-  $("#skills-languages").innerHTML = (p.languages || []).map(([l, lv]) => `<div class="lang">${esc(l)} <em>${esc(lv)}</em></div>`).join("");
+  $("#skills-languages").innerHTML = (p.languages || []).map(([l, lv]) => `<div class="lang">${esc(tr(l))} <em>${esc(tr(lv))}</em></div>`).join("");
 
-  const eduItem = e => `<div class="edu-item">${logoBox(e.logo_url, e.title, e.link)}<div><div class="when">${esc(e.period)}</div><h3>${esc(e.title)}</h3>${e.description ? `<p>${esc(e.description)}</p>` : ""}</div></div>`;
+  const eduItem = e => `<div class="edu-item">${logoBox(e.logo_url, e.title, e.link)}<div><div class="when">${esc(tr(e.period))}</div><h3>${esc(tr(e.title))}</h3>${e.description ? `<p>${esc(tr(e.description))}</p>` : ""}</div></div>`;
   $("#edu-left").innerHTML = c.education.filter(e => e.kind === "education").map(eduItem).join("");
   $("#edu-right").innerHTML = c.education.filter(e => e.kind !== "education").map(eduItem).join("");
 
   const blog = $("#home-blog");
-  if (c.posts && c.posts.length) {
-    blog.hidden = false;
-    $("#home-posts").innerHTML = c.posts.map(postCard).join("");
-  } else blog.hidden = true;
+  if (c.posts && c.posts.length) { blog.hidden = false; $("#home-posts").innerHTML = c.posts.map(postCard).join(""); }
+  else blog.hidden = true;
 
-  $("#contact-title").textContent = p.contact_title;
-  $("#contact-text").textContent = p.contact_text;
-  const li = $("#btn-linkedin");
-  li.hidden = !p.linkedin; li.href = safeUrl(p.linkedin);
-  const web = $("#btn-website");
-  web.hidden = !p.website; web.href = safeUrl(p.website);
+  $("#contact-title").textContent = tr(p.contact_title);
+  $("#contact-text").textContent = tr(p.contact_text);
+  const li = $("#btn-linkedin"); li.hidden = !p.linkedin; li.href = safeUrl(p.linkedin);
+  const web = $("#btn-website"); web.hidden = !p.website; web.href = safeUrl(p.website);
   document.querySelectorAll(".js-name").forEach(el => el.textContent = p.name);
   document.querySelectorAll(".js-location").forEach(el => el.textContent = p.location || "");
 
-  // Contact: "Hire me" / "Freelance project" choice, depending on what David is open to
+  // Contact: "Hire me" / "Freelance project" choice, depending on availability
   const kinds = { both: ["job", "freelance"], job: ["job"], freelance: ["freelance"], none: [] }[av];
   const reason = $("#reason"), form = $("#contact-form");
   reason.hidden = kinds.length < 2;
@@ -257,8 +320,8 @@ function renderHome(c) {
   const pick = k => {
     form.elements.kind.value = k || "general";
     reason.querySelectorAll(".reason-btn").forEach(b => b.classList.toggle("on", b.dataset.kind === k));
-    $("#reason-text").textContent = k === "job" ? p.hire_text : k === "freelance" ? p.freelance_text : "";
-    form.elements.message.placeholder = k === "job" ? "Tell me about the role and your company" : k === "freelance" ? "Tell me about your project, budget and timeline" : "Your message";
+    $("#reason-text").textContent = k === "job" ? tr(p.hire_text) : k === "freelance" ? tr(p.freelance_text) : "";
+    form.elements.message.placeholder = ui(k === "job" ? "ph_job" : k === "freelance" ? "ph_free" : "ph_message");
   };
   reason.onclick = e => { const b = e.target.closest(".reason-btn"); if (b) pick(b.dataset.kind); };
   pick(kinds.includes(form.elements.kind.value) ? form.elements.kind.value : kinds[0]);
@@ -268,7 +331,29 @@ function renderHome(c) {
   if (p.business_email) direct.push(`<a href="mailto:${esc(p.business_email)}">${esc(p.business_email)}</a>`);
   if (p.phone) direct.push(`<a href="tel:${esc(p.phone.replace(/[^\d+]/g, ""))}">${esc(p.phone)}</a>`);
   $("#direct").innerHTML = direct.join(`<span>·</span>`);
+
+  numberSections();
   observeReveal();
+  observeCounters();
+}
+
+/* Portfolio gallery with category filters */
+let PF_FILTER = "all";
+function renderPortfolio(items) {
+  POPUP_ITEMS.portfolio = items;
+  $("#portfolio").hidden = !items.length;
+  $("#nav-portfolio").hidden = !items.length;
+  const cats = [...new Set(items.map(i => i.category).filter(Boolean))];
+  if (PF_FILTER !== "all" && !cats.includes(PF_FILTER)) PF_FILTER = "all";
+  $("#pf-filters").innerHTML = cats.length > 1
+    ? [["all", LANG === "fr" ? "Tout" : "All"], ...cats.map(c => [c, tr(c)])].map(([k, l]) => `<button class="${PF_FILTER === k ? "on" : ""}" data-cat="${esc(k)}">${esc(l)}</button>`).join("")
+    : "";
+  $("#pf-filters").onclick = e => { const b = e.target.closest("[data-cat]"); if (b) { PF_FILTER = b.dataset.cat; renderPortfolio(items); } };
+  $("#pf-grid").innerHTML = items.map((it, i) => (PF_FILTER === "all" || it.category === PF_FILTER) ? `
+    <figure class="pf-item reveal in" data-pf="${i}" tabindex="0">
+      ${it.image_url ? `<img src="${esc(safeUrl(it.image_url))}" alt="${esc(tr(it.title))}" loading="lazy">` : `<div class="pf-blank">${esc(tr(it.title))}</div>`}
+      <figcaption>${it.category ? `<span>${esc(tr(it.category))}</span>` : ""}<b>${esc(tr(it.title))}</b></figcaption>
+    </figure>` : "").join("");
 }
 
 function postCard(p) {
@@ -280,18 +365,20 @@ function postCard(p) {
 
 /* ---------- blog pages ---------- */
 async function renderBlogList() {
+  applyStaticTexts();
   const d = getDb(), box = $("#posts");
   let posts = cacheGet("posts") || [];
   if (d) {
     const r = await d.from("posts").select("slug,title,excerpt,cover_url,tag,published_at").eq("published", true).order("published_at", { ascending: false });
     if (!r.error) { posts = r.data; cacheSet("posts", posts); }
   }
-  box.innerHTML = posts.length ? posts.map(postCard).join("") : `<p class="empty">No articles yet. Check back soon.</p>`;
-  if (!posts.length) box.style.display = "block";
+  box.innerHTML = posts.length ? posts.map(postCard).join("") : `<p class="empty">${ui("blog_empty")}</p>`;
+  box.style.display = posts.length ? "" : "block";
   observeReveal();
 }
 
 async function renderPost() {
+  applyStaticTexts();
   const slug = new URLSearchParams(location.search).get("slug");
   const d = getDb(), box = $("#article");
   let post = null;
@@ -299,14 +386,14 @@ async function renderPost() {
     const r = await d.from("posts").select("*").eq("slug", slug).eq("published", true).maybeSingle();
     post = r.data;
   }
-  if (!post) { box.innerHTML = `<h1>Article not found</h1><a class="back" href="blog.html">← All articles</a>`; return; }
+  if (!post) { box.innerHTML = `<h1>${ui("blog_404")}</h1><a class="back" href="blog.html">${ui("blog_back")}</a>`; return; }
   document.title = `${post.title} — David Caramelo`;
   const md = document.querySelector('meta[name="description"]'); if (md) md.content = post.excerpt || post.title;
   box.innerHTML = `<div class="meta">${esc([post.tag, fmtDate(post.published_at)].filter(Boolean).join(" · "))}</div>
     <h1>${esc(post.title)}</h1>
     ${post.cover_url ? `<img class="cover" src="${esc(safeUrl(post.cover_url))}" alt="">` : ""}
     <div class="prose">${markdown(post.body)}</div>
-    <a class="back" href="blog.html">← All articles</a>`;
+    <a class="back" href="blog.html">${ui("blog_back")}</a>`;
 }
 
 /* ---------- visits & messages ---------- */
@@ -332,6 +419,7 @@ function notifyByEmail(m) {
       _subject: `New ${label} from ${m.name} — your website`,
       _template: "table", _captcha: "false", _replyto: m.email,
       Type: label.charAt(0).toUpperCase() + label.slice(1), Name: m.name, Email: m.email, Message: m.message,
+      Language: LANG === "fr" ? "French" : "English",
       "Open your inbox": location.origin + "/admin.html"
     })
   }).catch(() => {});
@@ -343,16 +431,16 @@ function setupContactForm() {
   f.addEventListener("submit", async e => {
     e.preventDefault();
     const d = getDb();
-    if (!d) { note.textContent = "The contact form works once the site is online. Please use LinkedIn for now."; return; }
+    if (!d) { note.textContent = ui("form_offline"); return; }
     const data = Object.fromEntries(new FormData(f));
     if (data.website) return; // spam trap
-    note.textContent = "Sending…";
+    note.textContent = ui("form_sending");
     const kind = ["job", "freelance"].includes(data.kind) ? data.kind : "general";
     const r = await d.from("messages").insert({ name: data.name.trim(), email: data.email.trim(), message: data.message.trim(), kind });
-    if (r.error) { note.textContent = "Sorry, something went wrong. Please try LinkedIn instead."; return; }
+    if (r.error) { note.textContent = ui("form_err"); return; }
     notifyByEmail({ name: data.name.trim(), email: data.email.trim(), message: data.message.trim(), kind });
     f.reset(); f.elements.kind.value = kind; // keep the Hire me / Freelance choice
-    note.textContent = "Thank you, your message has been sent. I'll get back to you soon.";
+    note.textContent = ui("form_ok");
   });
 }
 
@@ -366,18 +454,34 @@ function observeReveal() {
 
 function setupChrome() {
   const yr = $("#yr"); if (yr) yr.textContent = new Date().getFullYear();
-  const header = document.querySelector("header");
-  const onScroll = () => header.classList.toggle("scrolled", window.scrollY > 20 || document.body.dataset.solid === "1");
+  const header = document.querySelector("header"), bar = $("#progress"), top = $("#to-top");
+  const onScroll = () => {
+    header.classList.toggle("scrolled", window.scrollY > 20 || document.body.dataset.solid === "1");
+    const max = document.documentElement.scrollHeight - innerHeight;
+    if (bar) bar.style.transform = `scaleX(${max > 0 ? Math.min(1, scrollY / max) : 0})`;
+    if (top) top.classList.toggle("show", scrollY > 700);
+  };
   onScroll(); window.addEventListener("scroll", onScroll, { passive: true });
+  top?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
   $(".menu-btn")?.addEventListener("click", () => document.body.classList.toggle("menu-open"));
   document.querySelectorAll(".nav ul a").forEach(a => a.addEventListener("click", () => document.body.classList.remove("menu-open")));
+  document.querySelectorAll(".lang-switch [data-lang]").forEach(b => b.addEventListener("click", () => {
+    if (b.dataset.lang === LANG) return;
+    setLang(b.dataset.lang);
+    const page = document.body.dataset.page;
+    if (page === "home" && LAST_CONTENT) renderHome(LAST_CONTENT);
+    else if (page === "blog") renderBlogList();
+    else if (page === "post") renderPost();
+    else applyStaticTexts();
+  }));
+  applyStaticTexts();
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
   const page = document.body.dataset.page;
   if (!page) return; // e.g. admin page: only uses the helpers above
   setupChrome();
-  if (page === "home") { renderHome(FALLBACK); setupContactForm(); setupProjectDialog(); const c = await loadContent(); renderHome(c); }
+  if (page === "home") { renderHome(cacheGet("content") || FALLBACK); setupContactForm(); setupDialog(); const c = await loadContent(); renderHome(c); }
   if (page === "blog") await renderBlogList();
   if (page === "post") await renderPost();
   observeReveal();

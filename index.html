@@ -6,6 +6,8 @@
 <title>David Caramelo — Real Estate Marketing</title>
 <meta name="description" content="David Caramelo — marketing professional specialised in real estate: property marketing strategy, SEO, email marketing and content. Based in Angers, France.">
 <link rel="canonical" href="https://jazzy-pavlova-8656f3.netlify.app/">
+<link rel="alternate" hreflang="en" href="https://jazzy-pavlova-8656f3.netlify.app/?lang=en">
+<link rel="alternate" hreflang="fr" href="https://jazzy-pavlova-8656f3.netlify.app/?lang=fr">
 <meta name="author" content="David Caramelo">
 <meta property="og:type" content="profile">
 <meta property="og:site_name" content="David Caramelo">
@@ -27,19 +29,22 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body data-page="home">
+<div class="progress" id="progress"></div>
 
 <header>
   <div class="wrap nav">
     <a href="index.html" class="logo">D<span>.</span>C</a>
     <ul>
-      <li><a href="#about">About</a></li>
-      <li><a href="#services">Services</a></li>
-      <li><a href="#experience">Experience</a></li>
-      <li><a href="#projects">Projects</a></li>
-      <li><a href="#skills">Skills</a></li>
-      <li><a href="blog.html">Blog</a></li>
-      <li><a href="#contact">Contact</a></li>
+      <li><a href="#about" data-i18n="nav_about">About</a></li>
+      <li><a href="#services" data-i18n="nav_services">Services</a></li>
+      <li><a href="#experience" data-i18n="nav_experience">Experience</a></li>
+      <li><a href="#projects" data-i18n="nav_projects">Projects</a></li>
+      <li id="nav-portfolio" hidden><a href="#portfolio" data-i18n="nav_portfolio">Portfolio</a></li>
+      <li><a href="#skills" data-i18n="nav_skills">Skills</a></li>
+      <li><a href="blog.html" data-i18n="nav_blog">Blog</a></li>
+      <li><a href="#contact" data-i18n="nav_contact">Contact</a></li>
     </ul>
+    <div class="lang-switch" aria-label="Language"><button data-lang="en">EN</button><button data-lang="fr">FR</button></div>
     <button class="menu-btn" aria-label="Open menu"><span></span><span></span></button>
   </div>
 </header>
@@ -54,18 +59,26 @@
         <ul class="highlights" id="hero-highlights"></ul>
         <div class="status"><i></i> <span id="hero-status"></span></div>
         <div class="btns">
-          <a href="#contact" class="btn solid">Get in touch</a>
-          <a href="#projects" class="btn ghost">View projects</a>
-          <a id="btn-cv" class="btn ghost" target="_blank" rel="noopener" download hidden>Download CV</a>
+          <a href="#contact" class="btn solid" data-i18n="btn_contact">Get in touch</a>
+          <a id="btn-book" class="btn ghost" target="_blank" rel="noopener" data-i18n="btn_book" hidden>Book a call</a>
+          <a href="#projects" class="btn ghost" data-i18n="btn_projects">View projects</a>
+          <a id="btn-cv" class="btn ghost" target="_blank" rel="noopener" download data-i18n="btn_cv" hidden>Download CV</a>
         </div>
       </div>
       <div class="portrait reveal" id="portrait"></div>
     </div>
   </section>
 
-  <section id="about" class="alt">
+  <div class="logo-strip" id="logo-strip" hidden>
     <div class="wrap">
-      <div class="sec-head reveal"><div class="sec-num">01 — About</div><h2 id="about-title"></h2></div>
+      <div class="logo-strip-title" data-i18n="logos_title">Worked &amp; studied with</div>
+      <div class="logo-row" id="logo-row"></div>
+    </div>
+  </div>
+
+  <section id="about" class="alt numbered" data-label="sec_about">
+    <div class="wrap">
+      <div class="sec-head reveal"><div class="sec-num"></div><h2 id="about-title"></h2></div>
       <div class="about-grid">
         <figure class="about-photo reveal" id="about-photo"></figure>
         <div class="about-text reveal" id="about-text"></div>
@@ -73,82 +86,98 @@
     </div>
   </section>
 
-  <section id="services" hidden>
+  <section id="services" class="numbered" data-label="sec_services" hidden>
     <div class="wrap">
-      <div class="sec-head reveal"><div class="sec-num">02 — Services</div><h2>What I can do for you</h2></div>
+      <div class="sec-head reveal"><div class="sec-num"></div><h2 data-i18n="h_services">What I can do for you</h2></div>
       <div class="services" id="service-list"></div>
     </div>
   </section>
 
-  <section id="experience" class="alt">
+  <section id="experience" class="alt numbered" data-label="sec_experience">
     <div class="wrap">
-      <div class="sec-head reveal"><div class="sec-num">03 — Experience</div><h2>Professional path</h2></div>
+      <div class="sec-head reveal"><div class="sec-num"></div><h2 data-i18n="h_experience">Professional path</h2></div>
       <div class="timeline" id="timeline"></div>
     </div>
   </section>
 
-  <section id="projects">
+  <section id="results" class="results numbered" data-label="sec_results" hidden>
     <div class="wrap">
-      <div class="sec-head reveal"><div class="sec-num">04 — Projects</div><h2>Selected work</h2></div>
+      <div class="sec-head reveal"><div class="sec-num"></div><h2 data-i18n="h_results">Results in numbers</h2></div>
+      <div class="result-row" id="result-row"></div>
+    </div>
+  </section>
+
+  <section id="projects" class="numbered" data-label="sec_projects">
+    <div class="wrap">
+      <div class="sec-head reveal"><div class="sec-num"></div><h2 data-i18n="h_projects">Selected work</h2></div>
       <div class="projects" id="project-list"></div>
     </div>
   </section>
 
-  <dialog class="project-dialog" id="project-dialog" aria-label="Project details">
+  <section id="portfolio" class="alt numbered" data-label="sec_portfolio" hidden>
+    <div class="wrap">
+      <div class="sec-head reveal"><div class="sec-num"></div><h2 data-i18n="h_portfolio">A look at my work</h2></div>
+      <div class="pf-filters" id="pf-filters"></div>
+      <div class="pf-grid" id="pf-grid"></div>
+    </div>
+  </section>
+
+  <dialog class="project-dialog" id="project-dialog" aria-label="Details">
     <button class="dlg-close" aria-label="Close">×</button>
     <div class="dlg-body"></div>
   </dialog>
 
-  <section id="skills" class="alt">
+  <section id="skills" class="numbered" data-label="sec_skills">
     <div class="wrap">
-      <div class="sec-head reveal"><div class="sec-num">05 — Skills</div><h2>What I bring</h2></div>
+      <div class="sec-head reveal"><div class="sec-num"></div><h2 data-i18n="h_skills">What I bring</h2></div>
       <div class="skills-grid">
-        <div class="reveal"><h3>Expertise</h3><div id="skills-expertise"></div></div>
-        <div class="reveal"><h3>Tools</h3><div id="skills-tools"></div></div>
-        <div class="reveal"><h3>Languages</h3><div id="skills-languages"></div></div>
+        <div class="reveal"><h3 data-i18n="h_expertise">Expertise</h3><div id="skills-expertise"></div></div>
+        <div class="reveal"><h3 data-i18n="h_tools">Tools</h3><div id="skills-tools"></div></div>
+        <div class="reveal"><h3 data-i18n="h_languages">Languages</h3><div id="skills-languages"></div></div>
       </div>
     </div>
   </section>
 
-  <section id="education">
+  <section id="education" class="alt numbered" data-label="sec_education">
     <div class="wrap">
-      <div class="sec-head reveal"><div class="sec-num">06 — Education</div><h2>Education &amp; certifications</h2></div>
+      <div class="sec-head reveal"><div class="sec-num"></div><h2 data-i18n="h_education">Education &amp; certifications</h2></div>
       <div class="edu"><div class="reveal" id="edu-left"></div><div class="reveal" id="edu-right"></div></div>
     </div>
   </section>
 
-  <section id="home-blog" class="home-blog" hidden>
+  <section id="home-blog" class="home-blog numbered" data-label="sec_journal" hidden>
     <div class="wrap">
-      <div class="sec-head reveal"><div class="sec-num">07 — Journal</div><h2>Latest articles</h2></div>
+      <div class="sec-head reveal"><div class="sec-num"></div><h2 data-i18n="h_journal">Latest articles</h2></div>
       <div class="posts" id="home-posts"></div>
-      <div class="see-all"><a href="blog.html" class="btn ghost">All articles</a></div>
+      <div class="see-all"><a href="blog.html" class="btn ghost" data-i18n="btn_all_articles">All articles</a></div>
     </div>
   </section>
 
   <section id="contact" class="contact">
     <div class="wrap reveal">
-      <div class="sec-num">Contact</div>
+      <div class="sec-num" data-i18n="nav_contact">Contact</div>
       <h2 id="contact-title"></h2>
       <p id="contact-text"></p>
       <div class="reason" id="reason" hidden>
-        <button type="button" class="reason-btn" data-kind="job"><b>Hire me</b><span>For a role in your team</span></button>
-        <button type="button" class="reason-btn" data-kind="freelance"><b>Freelance project</b><span>For a one-off or ongoing project</span></button>
+        <button type="button" class="reason-btn" data-kind="job"><b data-i18n="reason_hire">Hire me</b><span data-i18n="reason_hire_sub">For a role in your team</span></button>
+        <button type="button" class="reason-btn" data-kind="freelance"><b data-i18n="reason_free">Freelance project</b><span data-i18n="reason_free_sub">For a one-off or ongoing project</span></button>
       </div>
       <p class="reason-text" id="reason-text"></p>
       <form class="contact-form" id="contact-form">
         <input type="hidden" name="kind" value="general">
         <div class="row">
-          <input name="name" placeholder="Your name" required maxlength="200">
-          <input name="email" type="email" placeholder="Your email" required maxlength="200">
+          <input name="name" placeholder="Your name" data-i18n-ph="ph_name" required maxlength="200">
+          <input name="email" type="email" placeholder="Your email" data-i18n-ph="ph_email" required maxlength="200">
         </div>
         <textarea name="message" placeholder="Your message" required maxlength="5000"></textarea>
         <input name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
-        <button class="btn solid" type="submit">Send message</button>
+        <button class="btn solid" type="submit" data-i18n="btn_send">Send message</button>
         <div class="form-note" id="form-note"></div>
       </form>
       <div class="direct" id="direct"></div>
-      <div class="or-line">or find me on</div>
+      <div class="or-line" data-i18n="or_find">or find me on</div>
       <div class="btns">
+        <a id="btn-book-2" class="btn solid" target="_blank" rel="noopener" data-i18n="btn_book" hidden>Book a call</a>
         <a id="btn-linkedin" class="btn ghost" target="_blank" rel="noopener" hidden>LinkedIn</a>
         <a id="btn-website" class="btn ghost" target="_blank" rel="noopener" hidden>Lusitania Investments</a>
       </div>
@@ -160,8 +189,13 @@
   <div class="wrap"><span>© <span id="yr"></span> <span class="js-name">David Caramelo</span></span><span class="js-location">Angers, France</span></div>
 </footer>
 
+<button class="to-top" id="to-top" data-i18n-label="back_top" aria-label="Back to top">
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
+<script src="i18n.js"></script>
 <script src="site.js"></script>
 </body>
 </html>
