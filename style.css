@@ -237,7 +237,7 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 /* ---------- Logos (experience & education) ---------- */
 .job-body{display:flex;gap:22px;align-items:flex-start}
 .logo-box{flex:none;width:56px;height:56px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;overflow:hidden;transition:border-color .2s}
-.logo-box img{width:70%;height:70%;object-fit:contain}
+.logo-box img{width:86%;height:86%;object-fit:contain}
 .logo-box span{font-family:var(--serif);font-size:1.2rem;color:var(--accent)}
 a.logo-box:hover{border-color:var(--accent)}
 .job .where a{border-bottom:1px solid transparent;transition:border-color .2s}
@@ -331,3 +331,7 @@ a.tool:hover .arrow{opacity:1}
 .pf-item:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 @media (max-width:960px){.pf-grid{grid-template-columns:1fr 1fr}}
 @media (max-width:680px){.pf-grid{grid-template-columns:1fr}.pf-item figcaption{opacity:1;transform:none}}
+.logo-box.wide{width:112px}
+.logo-box.wide img{width:90%;height:80%}
+.edu-item .logo-box.wide{width:96px}
+@media (max-width:680px){.logo-box.wide{width:84px}}

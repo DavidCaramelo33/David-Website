@@ -155,7 +155,7 @@ function serviceIcon(title) {
 }
 
 function logoBox(url, name, link) {
-  const inner = url ? `<img src="${esc(safeUrl(url))}" alt="${esc(name)} logo" loading="lazy">`
+  const inner = url ? `<img src="${esc(safeUrl(url))}" alt="${esc(name)} logo" loading="lazy" onload="if(this.naturalWidth>this.naturalHeight*1.8)this.parentNode.classList.add('wide')">`
     : `<span>${esc(String(name || "?").split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase())}</span>`;
   return link ? `<a class="logo-box" href="${esc(safeUrl(link))}" target="_blank" rel="noopener" title="${esc(name)}">${inner}</a>` : `<div class="logo-box">${inner}</div>`;
 }
