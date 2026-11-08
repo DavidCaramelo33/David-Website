@@ -153,6 +153,7 @@ const ICONS = {
   other: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>'
 };
 const HOBBY_ICONS = [
+  [/motor|formula|f1|racing|le mans|kart|rally/, '<path d="M3 15h18l-2-4h-5l-2-3H8l-2 3H4z"/><circle cx="7" cy="16" r="2"/><circle cx="17" cy="16" r="2"/><path d="M14 8h4"/>'],
   [/travel|trip|voyage|viag|explor/, '<path d="M2 16l20-7-20-7 4 7-4 7z" transform="rotate(-20 12 12)"/>'],
   [/foot|soccer|sport|ball|padel|tennis|basket/, '<circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 4.5h-5L8 10z"/><path d="M12 3v4M21 10.5l-5 -.5M17.5 19l-3-4.5M6.5 19l3-4.5M3 10.5l5-.5"/>'],
   [/gym|fitness|workout|run|train/, '<path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10"/>'],

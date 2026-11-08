@@ -179,6 +179,23 @@ const FR_CONTENT = {
   "Leadership development and cross-cultural business.": "Développement du leadership et commerce interculturel.",
   "Beyond work": "En dehors du travail",
 
+  // Beyond work
+  "Outside of work, I'm happiest when I'm moving: training at the gym, following a race or discovering a new city.":
+    "En dehors du travail, je suis le plus heureux quand je bouge : à la salle de sport, devant une course ou en découvrant une nouvelle ville.",
+  "I've lived and worked in Portugal, the Netherlands and France, and travelled across Europe, South America and beyond. Becoming an international student opened up my world. I've built friendships with people from many countries and continents, and that curiosity for other cultures shapes how I work with clients and teams.":
+    "J'ai vécu et travaillé au Portugal, aux Pays-Bas et en France, et j'ai voyagé à travers l'Europe, l'Amérique du Sud et au-delà. Devenir étudiant international m'a ouvert au monde. J'ai noué des liens avec des personnes de nombreux pays et continents, et cette curiosité pour les autres cultures influence ma façon de travailler avec mes clients et mes équipes.",
+  "The gym": "La salle de sport",
+  "Training is part of my routine. It keeps me disciplined, focused and full of energy for everything else.":
+    "Le sport fait partie de mon quotidien. Il me garde discipliné, concentré et plein d'énergie pour tout le reste.",
+  "Motorsport": "Sport automobile",
+  "A big fan of Formula 1 and Le Mans endurance racing, where strategy, teamwork and every detail make the difference.":
+    "Grand fan de Formule 1 et d'endurance au Mans, où la stratégie, l'esprit d'équipe et chaque détail font la différence.",
+  "Football": "Football",
+  "I follow the matches every week. Football has always been part of my life.":
+    "Je suis les matchs chaque semaine. Le football a toujours fait partie de ma vie.",
+  "Travelling": "Voyager",
+  "I've lived and worked in three countries and explored Europe, South America and more. Every trip teaches me something about people and places.":
+    "J'ai vécu et travaillé dans trois pays et exploré l'Europe, l'Amérique du Sud et bien plus. Chaque voyage m'apprend quelque chose sur les gens et les lieux.",
   // Same in both languages (names, places, levels)
   "PT · EN · ES · FR": "PT · EN · ES · FR", "SEO": "SEO", "C2": "C2", "B1": "B1",
   "Angers, France": "Angers, France", "Nantes, France": "Nantes, France", "Oeiras, Portugal": "Oeiras, Portugal",
