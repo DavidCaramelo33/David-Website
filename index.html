@@ -66,7 +66,10 @@
   <section id="about" class="alt">
     <div class="wrap">
       <div class="sec-head reveal"><div class="sec-num">01 — About</div><h2 id="about-title"></h2></div>
-      <div class="indent about-text reveal" id="about-text"></div>
+      <div class="about-grid">
+        <figure class="about-photo reveal" id="about-photo"></figure>
+        <div class="about-text reveal" id="about-text"></div>
+      </div>
     </div>
   </section>
 
@@ -90,6 +93,11 @@
       <div class="projects" id="project-list"></div>
     </div>
   </section>
+
+  <dialog class="project-dialog" id="project-dialog" aria-label="Project details">
+    <button class="dlg-close" aria-label="Close">×</button>
+    <div class="dlg-body"></div>
+  </dialog>
 
   <section id="skills" class="alt">
     <div class="wrap">

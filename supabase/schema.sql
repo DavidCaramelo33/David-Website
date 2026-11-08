@@ -23,7 +23,7 @@ create table profile (
 
 create table experience (
   id uuid primary key default gen_random_uuid(),
-  title text not null, org text, place text, period text, description text,
+  title text not null, org text, place text, period text, description text, logo_url text, link text,
   sort int default 0, visible boolean default true
 );
 
@@ -36,7 +36,7 @@ create table projects (
 create table education (
   id uuid primary key default gen_random_uuid(),
   kind text not null default 'education' check (kind in ('education','certification')),
-  title text not null, period text, description text,
+  title text not null, period text, description text, logo_url text, link text,
   sort int default 0, visible boolean default true
 );
 

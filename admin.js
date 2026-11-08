@@ -77,8 +77,8 @@ const LISTS = {
       { name: "title", label: "Project name", required: true },
       { name: "tag", label: "Small label", hint: "e.g. Real Estate · 2025" },
       { name: "description", label: "Description", type: "textarea" },
-      { name: "link", label: "Link", hint: "optional, e.g. https://…", type: "url" },
-      { name: "image_url", label: "Image", type: "image" },
+      { name: "link", label: "Link", hint: "website or video, opens from the project pop-up", type: "url" },
+      { name: "image_url", label: "Picture", hint: "e.g. a screenshot of the website or a still from the video", type: "image" },
       { name: "featured", label: "Show as the big featured project", type: "bool" },
       { name: "visible", label: "Visible on the website", type: "bool" }
     ]
@@ -90,6 +90,8 @@ const LISTS = {
       { name: "title", label: "Job title", required: true },
       { name: "org", label: "Company" },
       { name: "place", label: "Location" },
+      { name: "logo_url", label: "Company logo", type: "image" },
+      { name: "link", label: "Company website", hint: "optional, e.g. https://…", type: "url" },
       { name: "period", label: "Dates", hint: "e.g. 2024 — Present" },
       { name: "description", label: "What you did", type: "textarea" },
       { name: "visible", label: "Visible on the website", type: "bool" }
@@ -102,6 +104,8 @@ const LISTS = {
       { name: "kind", label: "Type", type: "select", options: [["education", "Education"], ["certification", "Certification / programme"]] },
       { name: "title", label: "Title", required: true },
       { name: "period", label: "Dates" },
+      { name: "logo_url", label: "Logo", type: "image" },
+      { name: "link", label: "Website", hint: "optional", type: "url" },
       { name: "description", label: "Details", type: "textarea" },
       { name: "visible", label: "Visible on the website", type: "bool" }
     ]
@@ -273,6 +277,7 @@ const PROFILE_FIELDS = [
   { name: "photo_url", label: "Your photo", hint: "leave empty to use the default photo", type: "image" },
   { name: "highlights", label: "Highlights under your name", hint: "one per line, keep them short", type: "textarea", lines: true },
   { name: "cv_url", label: "Your CV (PDF)", hint: "adds a “Download CV” button on the website", type: "file", accept: ".pdf,application/pdf" },
+  { name: "about_image", label: "About — picture", hint: "shown next to your About text · leave empty to use your main photo", type: "image" },
   { name: "about_title", label: "About — title" },
   { name: "about", label: "About — text", hint: "empty line between paragraphs", type: "textarea", big: true },
   { name: "facts", label: "Key numbers", hint: "one per line: number | label", type: "textarea", pairs: true },

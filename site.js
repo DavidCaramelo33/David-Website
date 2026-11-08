@@ -30,24 +30,24 @@ const FALLBACK = {
     email: "", phone: "", location: "Angers, France", work_note: "Remote or relocation within France"
   },
   experience: [
-    { title: "Founder", org: "Lusitania Investments", place: "Angers, France", period: "2024 — Present", description: "Founded and built a real estate investment company connecting international investors with property opportunities in Portugal. I lead business development and the full marketing strategy: brand, website content, SEO, email marketing and social media." },
-    { title: "Marketing Intern", org: "Weenat", place: "Nantes, France", period: "2025 — 2026", description: "Contributed to digital marketing campaigns through content creation, social media management and market analysis, helping increase brand visibility and engagement." },
+    { title: "Founder", org: "Lusitania Investments", logo_url: "images/logos/lusitania.png", link: "https://lusitaniainvestments.fr/", place: "Angers, France", period: "2024 — Present", description: "Founded and built a real estate investment company connecting international investors with property opportunities in Portugal. I lead business development and the full marketing strategy: brand, website content, SEO, email marketing and social media." },
+    { title: "Marketing Intern", org: "Weenat", logo_url: "images/logos/weenat.png", link: "https://weenat.com/", place: "Nantes, France", period: "2025 — 2026", description: "Contributed to digital marketing campaigns through content creation, social media management and market analysis, helping increase brand visibility and engagement." },
     { title: "Freelance Marketing Manager", org: "", place: "Remote", period: "2019 — Present", description: "Creating targeted social media content for clients to increase visibility and engage potential customers." },
-    { title: "Sales Assistant", org: "Fitness Up", place: "Oeiras, Portugal", period: "2021 — 2022", description: "Delivered high-quality customer service with personalised advice and tailored membership plans, and promoted the gym's services." }
+    { title: "Sales Assistant", org: "Fitness Up", logo_url: "images/logos/fitnessup.png", link: "https://fitnessup.pt/", place: "Oeiras, Portugal", period: "2021 — 2022", description: "Delivered high-quality customer service with personalised advice and tailored membership plans, and promoted the gym's services." }
   ],
   projects: [
-    { title: "Lusitania Investments", tag: "Real Estate · Founder", featured: true, link: "https://lusitaniainvestments.fr/", description: "A real estate company helping international (especially French) investors buy property in Portugal. I built its marketing from the ground up: positioning, SEO and content strategy, email campaigns, property listings and social media." },
+    { title: "Lusitania Investments", tag: "Real Estate · Founder", image_url: "images/projects/lusitania.jpg", featured: true, link: "https://lusitaniainvestments.fr/", description: "A real estate company helping international (especially French) investors buy property in Portugal. I built its marketing from the ground up: positioning, SEO and content strategy, email campaigns, property listings and social media." },
     { title: "Geldloket Communication Strategy", tag: "Strategy · 2022–2023", description: "A marketing and communication strategy for a financial consulting firm for young adults, with social media content, influencer collaborations, workshops and partnerships." },
     { title: "City of Emmen Promo Film", tag: "Video · 2022", description: "A promotional video for the city of Emmen, taken from brainstorming and storyboard through filming landmarks and interviews with locals." },
     { title: "Helios Student Association", tag: "Campus · Marketing Manager", description: "Designed and ran targeted communication strategies to raise awareness for the association at NHL Stenden University." }
   ],
   education: [
-    { kind: "education", title: "BBA International Business", period: "2023 — Present", description: "NHL Stenden University of Applied Sciences, Emmen (NL). Specialisation in Marketing & Sales, plus Finance, Operations & Supply Chain, and Organisational Behaviour." },
+    { kind: "education", title: "BBA International Business", logo_url: "images/logos/nhlstenden.png", link: "https://www.nhlstenden.com/", period: "2023 — Present", description: "NHL Stenden University of Applied Sciences, Emmen (NL). Specialisation in Marketing & Sales, plus Finance, Operations & Supply Chain, and Organisational Behaviour." },
     { kind: "education", title: "Business Diploma", period: "2017 — 2020", description: "São João do Estoril Vocational High School, Portugal. Specialisation in Marketing, Advertising & Public Relations." },
-    { kind: "certification", title: "The Fundamentals of Digital Marketing", period: "2023" },
-    { kind: "certification", title: "Google Analytics", period: "2022" },
-    { kind: "certification", title: "English C2 — IELTS Academic", period: "2020" },
-    { kind: "certification", title: "X-Honours Programme, NHL Stenden", period: "2022", description: "Leadership development and cross-cultural business." }
+    { kind: "certification", title: "The Fundamentals of Digital Marketing", logo_url: "images/logos/google.png", link: "https://skillshop.withgoogle.com/", period: "2023" },
+    { kind: "certification", title: "Google Analytics", logo_url: "images/logos/analytics.png", link: "https://skillshop.withgoogle.com/", period: "2022" },
+    { kind: "certification", title: "English C2 — IELTS Academic", logo_url: "images/logos/ielts.png", link: "https://ielts.org/", period: "2020" },
+    { kind: "certification", title: "X-Honours Programme, NHL Stenden", logo_url: "images/logos/nhlstenden.png", link: "https://www.nhlstenden.com/", period: "2022", description: "Leadership development and cross-cultural business." }
   ],
   posts: []
 };
@@ -117,6 +117,64 @@ async function loadContent() {
 const AVAIL_LABEL = { both: "Open to work & freelance", job: "Open to work", freelance: "Available for freelance", none: "Not currently available" };
 const siteAvail = p => AVAIL_LABEL[p.availability] ? p.availability : (p.open_to_hire === false ? (p.freelance ? "freelance" : "none") : (p.freelance === false ? "job" : "both"));
 
+/* ---------- logos, icons, project pop-up ---------- */
+const TOOLS = {
+  "indesign": { name: "Adobe InDesign", logo: "indesign", url: "https://www.adobe.com/products/indesign.html" },
+  "adobe": { name: "Adobe", logo: "indesign", url: "https://www.adobe.com/" },
+  "brevo": { name: "Brevo", logo: "brevo", url: "https://www.brevo.com/" },
+  "mailchimp": { name: "Mailchimp", logo: "mailchimp", url: "https://mailchimp.com/" },
+  "google ads": { name: "Google Ads", logo: "googleads", url: "https://ads.google.com/" },
+  "meta": { name: "Meta Ads", logo: "meta", url: "https://www.facebook.com/business/ads" },
+  "analytics": { name: "Google Analytics", logo: "analytics", url: "https://marketingplatform.google.com/about/analytics/" },
+  "canva": { name: "Canva", logo: "canva", url: "https://www.canva.com/" },
+  "figma": { name: "Figma", logo: "figma", url: "https://www.figma.com/" },
+  "capcut": { name: "CapCut", logo: "capcut", url: "https://www.capcut.com/" },
+  "davinci": { name: "DaVinci Resolve", logo: "davinci", url: "https://www.blackmagicdesign.com/products/davinciresolve" },
+  "office": { name: "Microsoft Office", logo: "microsoft", url: "https://www.microsoft.com/microsoft-365" },
+  "microsoft": { name: "Microsoft Office", logo: "microsoft", url: "https://www.microsoft.com/microsoft-365" }
+};
+
+const ICONS = {
+  strategy: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
+  seo: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/><path d="M8 11.5l2 2 3.5-4"/>',
+  email: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>',
+  visual: '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  other: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>'
+};
+function serviceIcon(title) {
+  const t = String(title).toLowerCase();
+  const k = /strateg|property|launch|plan/.test(t) ? "strategy" : /visual|video|photo|design|brochure/.test(t) ? "visual" : /mail|newsletter|crm/.test(t) ? "email" : /seo|search|google|content/.test(t) ? "seo" : "other";
+  return `<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
+}
+
+function logoBox(url, name, link) {
+  const inner = url ? `<img src="${esc(safeUrl(url))}" alt="${esc(name)} logo" loading="lazy">`
+    : `<span>${esc(String(name || "?").split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase())}</span>`;
+  return link ? `<a class="logo-box" href="${esc(safeUrl(link))}" target="_blank" rel="noopener" title="${esc(name)}">${inner}</a>` : `<div class="logo-box">${inner}</div>`;
+}
+
+let PROJECTS = [];
+function openProject(i) {
+  const pr = PROJECTS[i]; if (!pr) return;
+  const dlg = $("#project-dialog");
+  dlg.querySelector(".dlg-body").innerHTML = `
+    ${pr.image_url
+      ? (pr.link ? `<a class="dlg-shot" href="${esc(safeUrl(pr.link))}" target="_blank" rel="noopener"><img src="${esc(safeUrl(pr.image_url))}" alt="${esc(pr.title)}"><span>Open ↗</span></a>` : `<div class="dlg-shot"><img src="${esc(safeUrl(pr.image_url))}" alt="${esc(pr.title)}"></div>`)
+      : ""}
+    <div class="dlg-text">
+      <div class="tag">${esc(pr.tag)}</div><h3>${esc(pr.title)}</h3><p>${esc(pr.description)}</p>
+      ${pr.link ? `<a class="btn solid" href="${esc(safeUrl(pr.link))}" target="_blank" rel="noopener">${/youtu|vimeo|video/i.test(pr.link) ? "Watch the video" : "Visit the website"} ↗</a>` : `<p class="muted-note">Link coming soon.</p>`}
+    </div>`;
+  if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+}
+function setupProjectDialog() {
+  const list = $("#project-list"), dlg = $("#project-dialog");
+  if (!list || !dlg) return;
+  list.addEventListener("click", e => { const card = e.target.closest("[data-project]"); if (card) openProject(card.dataset.project); });
+  list.addEventListener("keydown", e => { const card = e.target.closest("[data-project]"); if (card && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openProject(card.dataset.project); } });
+  dlg.addEventListener("click", e => { if (e.target === dlg || e.target.closest(".dlg-close")) dlg.close(); });
+}
+
 /* ---------- home page ---------- */
 function renderHome(c) {
   const p = c.profile;
@@ -136,35 +194,43 @@ function renderHome(c) {
   const services = p.services || [];
   $("#services").hidden = !services.length;
   $("#service-list").innerHTML = services.map(([t, d], i) => `
-    <div class="service reveal"><span class="service-num">${String(i + 1).padStart(2, "0")}</span><h3>${esc(t)}</h3><p>${esc(d || "")}</p></div>`).join("");
+    <div class="service reveal"><div class="service-top"><span class="service-icon">${serviceIcon(t)}</span><span class="service-num">${String(i + 1).padStart(2, "0")}</span></div><h3>${esc(t)}</h3><p>${esc(d || "")}</p></div>`).join("");
 
+  $("#about-photo").innerHTML = `<img src="${esc(safeUrl(p.about_image || "images/david.jpg"))}" alt="${esc(p.name)}">`;
   $("#about-title").textContent = p.about_title;
   $("#about-text").innerHTML = String(p.about || "").split(/\n{2,}/).map(t => `<p>${esc(t)}</p>`).join("") +
     `<div class="facts">${(p.facts || []).map(([n, l]) => `<div class="fact"><b>${esc(n)}</b><span>${esc(l)}</span></div>`).join("")}</div>`;
 
   $("#timeline").innerHTML = c.experience.map(j => `
-    <div class="job reveal"><div class="when">${esc(j.period)}</div><div>
-      <h3>${esc(j.title)}</h3>
-      <div class="where">${esc([j.org, j.place].filter(Boolean).join(" · "))}</div>
-      <p>${esc(j.description)}</p></div></div>`).join("");
+    <div class="job reveal"><div class="when">${esc(j.period)}</div><div class="job-body">
+      ${logoBox(j.logo_url, j.org || j.title, j.link)}
+      <div><h3>${esc(j.title)}</h3>
+      <div class="where">${j.link && j.org ? `<a href="${esc(safeUrl(j.link))}" target="_blank" rel="noopener">${esc(j.org)}</a>${j.place ? " · " + esc(j.place) : ""}` : esc([j.org, j.place].filter(Boolean).join(" · "))}</div>
+      <p>${esc(j.description)}</p></div></div></div>`).join("");
 
-  $("#project-list").innerHTML = c.projects.map(pr => pr.featured ? `
-    <article class="project featured reveal"><div>
+  PROJECTS = c.projects;
+  $("#project-list").innerHTML = c.projects.map((pr, i) => pr.featured ? `
+    <article class="project featured reveal" data-project="${i}" tabindex="0"><div>
       <div class="tag">${esc(pr.tag)}</div><h3>${esc(pr.title)}</h3><p>${esc(pr.description)}</p>
-      ${pr.link ? `<a class="more" href="${esc(safeUrl(pr.link))}" target="_blank" rel="noopener">Visit the website</a>` : ""}
-    </div><div class="featured-visual">${pr.image_url ? `<img src="${esc(safeUrl(pr.image_url))}" alt="${esc(pr.title)}">` : "Property marketing, from strategy to listing."}</div></article>` : `
-    <article class="project reveal">
-      ${pr.image_url ? `<img class="project-img" src="${esc(safeUrl(pr.image_url))}" alt="${esc(pr.title)}">` : ""}
+      <span class="more">${pr.link ? "Preview &amp; visit the website" : "View details"}</span>
+    </div><div class="featured-visual">${pr.image_url ? `<img src="${esc(safeUrl(pr.image_url))}" alt="${esc(pr.title)}" loading="lazy">` : "Property marketing, from strategy to listing."}</div></article>` : `
+    <article class="project reveal" data-project="${i}" tabindex="0">
+      <div class="project-thumb">${pr.image_url ? `<img src="${esc(safeUrl(pr.image_url))}" alt="${esc(pr.title)}" loading="lazy">` : `<span>${esc(pr.title)}</span>`}</div>
       <div class="tag">${esc(pr.tag)}</div><h3>${esc(pr.title)}</h3><p>${esc(pr.description)}</p>
-      ${pr.link ? `<a class="more" href="${esc(safeUrl(pr.link))}" target="_blank" rel="noopener">View project</a>` : ""}
+      <span class="more">${pr.link ? "Preview &amp; open" : "View details"}</span>
     </article>`).join("");
 
   const list = a => `<ul>${(a || []).map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
   $("#skills-expertise").innerHTML = list(p.expertise);
-  $("#skills-tools").innerHTML = list(p.tools);
+  $("#skills-tools").innerHTML = `<div class="tools">${(p.tools || []).flatMap(t => String(t).split("·")).map(t => t.trim()).filter(Boolean).map(t => {
+    const k = Object.keys(TOOLS).find(key => t.toLowerCase().includes(key));
+    if (!k) return `<span class="tool"><span class="tool-logo blank">${esc(t[0])}</span>${esc(t)}</span>`;
+    const tool = TOOLS[k];
+    return `<a class="tool" href="${tool.url}" target="_blank" rel="noopener" title="Visit the official ${esc(tool.name)} website"><img class="tool-logo" src="images/logos/${tool.logo}.png" alt="">${esc(tool.name)}<span class="arrow">↗</span></a>`;
+  }).join("")}</div>`;
   $("#skills-languages").innerHTML = (p.languages || []).map(([l, lv]) => `<div class="lang">${esc(l)} <em>${esc(lv)}</em></div>`).join("");
 
-  const eduItem = e => `<div class="edu-item"><div class="when">${esc(e.period)}</div><h3>${esc(e.title)}</h3>${e.description ? `<p>${esc(e.description)}</p>` : ""}</div>`;
+  const eduItem = e => `<div class="edu-item">${logoBox(e.logo_url, e.title, e.link)}<div><div class="when">${esc(e.period)}</div><h3>${esc(e.title)}</h3>${e.description ? `<p>${esc(e.description)}</p>` : ""}</div></div>`;
   $("#edu-left").innerHTML = c.education.filter(e => e.kind === "education").map(eduItem).join("");
   $("#edu-right").innerHTML = c.education.filter(e => e.kind !== "education").map(eduItem).join("");
 
@@ -290,7 +356,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const page = document.body.dataset.page;
   if (!page) return; // e.g. admin page: only uses the helpers above
   setupChrome();
-  if (page === "home") { renderHome(FALLBACK); setupContactForm(); const c = await loadContent(); renderHome(c); }
+  if (page === "home") { renderHome(FALLBACK); setupContactForm(); setupProjectDialog(); const c = await loadContent(); renderHome(c); }
   if (page === "blog") await renderBlogList();
   if (page === "post") await renderPost();
   observeReveal();
