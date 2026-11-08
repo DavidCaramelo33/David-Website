@@ -129,6 +129,7 @@ const FR_CONTENT = {
   "Properties marketed for Lusitania Investments": "Biens commercialisés pour Lusitania Investments",
   "Countries connected: France & Portugal": "Pays reliés : France et Portugal",
   "Website views for Lusitania Investments": "Vues sur le site de Lusitania Investments",
+  "Views across social media": "Vues sur les réseaux sociaux",
 
   // Experience
   "Founder": "Fondateur",
