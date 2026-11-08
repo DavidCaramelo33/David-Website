@@ -333,8 +333,78 @@ async function refreshBadge() {
   const r = await sb.from("messages").select("id", { count: "exact", head: true }).eq("is_read", false);
   const b = document.getElementById("unread-badge");
   b.hidden = !r.count; b.textContent = r.count || "";
+  refreshBell();
   return r.count || 0;
 }
+
+/* ---------- notification bell ---------- */
+const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+const ago = d => {
+  const s = (Date.now() - new Date(d)) / 1000;
+  if (s < 60) return "just now";
+  if (s < 3600) return Math.floor(s / 60) + " min ago";
+  if (s < 86400) return Math.floor(s / 3600) + " h ago";
+  return Math.floor(s / 86400) + " d ago";
+};
+let bellLastCount = null;
+
+async function refreshBell() {
+  // first time on this device: start counting visits from now
+  if (!lsGet("dc_visits_seen")) lsSet("dc_visits_seen", new Date().toISOString());
+  const seen = lsGet("dc_visits_seen");
+  const [msgs, visits] = await Promise.all([
+    sb.from("messages").select("id,name,message,created_at").eq("is_read", false).order("created_at", { ascending: false }).limit(10),
+    sb.from("page_views").select("visitor,created_at").gt("created_at", seen).order("created_at", { ascending: false }).limit(5000)
+  ]);
+  const items = [];
+  (msgs.data || []).forEach(m => items.push({ kind: "msg", when: m.created_at, title: `New message from ${m.name}`, text: m.message, go: "messages" }));
+  const v = visits.data || [];
+  if (v.length) {
+    const people = new Set(v.map(x => x.visitor)).size;
+    items.push({ kind: "visit", when: v[0].created_at, title: `${v.length} new page view${v.length > 1 ? "s" : ""}`, text: `from ${people} visitor${people > 1 ? "s" : ""} since you last checked`, go: "dashboard", visits: true });
+  }
+  items.sort((a, b) => new Date(b.when) - new Date(a.when));
+
+  const count = (msgs.data || []).length + (v.length ? 1 : 0);
+  const badge = document.getElementById("bell-count");
+  badge.hidden = !count; badge.textContent = count > 9 ? "9+" : count;
+  document.title = (count ? `(${count}) ` : "") + "Admin — David Caramelo";
+  if (bellLastCount !== null && count > bellLastCount) {
+    const bell = document.getElementById("bell");
+    bell.classList.remove("ring"); void bell.offsetWidth; bell.classList.add("ring");
+  }
+  bellLastCount = count;
+
+  document.getElementById("notif-list").innerHTML = items.length
+    ? items.map((n, i) => `<button class="notif-item" data-i="${i}">
+        <span class="notif-icon ${n.kind}">${n.kind === "msg" ? "✉" : "↗"}</span>
+        <span class="txt"><b>${esc(n.title)}</b><p>${esc(n.text)}</p><div class="when">${ago(n.when)}</div></span></button>`).join("")
+    : `<div class="notif-empty">You're all caught up ✓</div>`;
+  document.getElementById("notif-list").onclick = e => {
+    const b = e.target.closest("[data-i]"); if (!b) return;
+    const n = items[b.dataset.i];
+    if (n.visits) lsSet("dc_visits_seen", new Date().toISOString());
+    closeNotif(); go(n.go); refreshBell();
+  };
+}
+
+function closeNotif() { document.getElementById("notif").hidden = true; document.getElementById("bell").classList.remove("open"); }
+document.getElementById("bell").onclick = e => {
+  e.stopPropagation();
+  const p = document.getElementById("notif");
+  p.hidden = !p.hidden;
+  document.getElementById("bell").classList.toggle("open", !p.hidden);
+};
+document.getElementById("notif").onclick = e => e.stopPropagation();
+document.addEventListener("click", closeNotif);
+document.getElementById("notif-clear").onclick = async () => {
+  lsSet("dc_visits_seen", new Date().toISOString());
+  await sb.from("messages").update({ is_read: true }).eq("is_read", false);
+  closeNotif(); await refreshBadge();
+  if (document.querySelector('aside [data-view="messages"].on') || document.querySelector('aside [data-view="dashboard"].on')) go(document.querySelector("aside [data-view].on").dataset.view);
+  toast("All caught up");
+};
 
 /* ---------- dashboard ---------- */
 async function showDashboard() {
@@ -441,6 +511,8 @@ async function enter() {
   document.getElementById("app").hidden = false;
   let last = "dashboard"; try { last = sessionStorage.getItem("dc_admin_view") || last; } catch {}
   go(last);
+  refreshBadge();
+  if (!window.__bellTimer) window.__bellTimer = setInterval(refreshBadge, 60000); // check for new notifications every minute
 }
 function showLogin() { document.getElementById("app").hidden = true; document.getElementById("login").hidden = false; }
 
