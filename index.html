@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>David Caramelo — Real Estate Marketing</title>
+<meta name="description" content="David Caramelo — marketing professional specialised in real estate: property marketing strategy, SEO, email marketing and content. Based in Angers, France.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="home">
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo">D<span>.</span>C</a>
+    <ul>
+      <li><a href="#about">About</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="blog.html">Blog</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <button class="menu-btn" aria-label="Open menu"><span></span><span></span></button>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="reveal">
+        <div class="eyebrow" id="hero-eyebrow"></div>
+        <h1 id="hero-name"></h1>
+        <p class="lead" id="hero-pitch"></p>
+        <div class="status"><i></i> <span id="hero-status"></span></div>
+        <div class="btns">
+          <a href="#contact" class="btn solid">Get in touch</a>
+          <a href="#projects" class="btn ghost">View projects</a>
+        </div>
+      </div>
+      <div class="portrait reveal" id="portrait"></div>
+    </div>
+  </section>
+
+  <section id="about" class="alt">
+    <div class="wrap">
+      <div class="sec-head reveal"><div class="sec-num">01 — About</div><h2 id="about-title"></h2></div>
+      <div class="indent about-text reveal" id="about-text"></div>
+    </div>
+  </section>
+
+  <section id="experience">
+    <div class="wrap">
+      <div class="sec-head reveal"><div class="sec-num">02 — Experience</div><h2>Professional path</h2></div>
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </section>
+
+  <section id="projects" class="alt">
+    <div class="wrap">
+      <div class="sec-head reveal"><div class="sec-num">03 — Projects</div><h2>Selected work</h2></div>
+      <div class="projects" id="project-list"></div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="wrap">
+      <div class="sec-head reveal"><div class="sec-num">04 — Skills</div><h2>What I bring</h2></div>
+      <div class="skills-grid">
+        <div class="reveal"><h3>Expertise</h3><div id="skills-expertise"></div></div>
+        <div class="reveal"><h3>Tools</h3><div id="skills-tools"></div></div>
+        <div class="reveal"><h3>Languages</h3><div id="skills-languages"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="education" class="alt">
+    <div class="wrap">
+      <div class="sec-head reveal"><div class="sec-num">05 — Education</div><h2>Education &amp; certifications</h2></div>
+      <div class="edu"><div class="reveal" id="edu-left"></div><div class="reveal" id="edu-right"></div></div>
+    </div>
+  </section>
+
+  <section id="home-blog" class="home-blog" hidden>
+    <div class="wrap">
+      <div class="sec-head reveal"><div class="sec-num">06 — Journal</div><h2>Latest articles</h2></div>
+      <div class="posts" id="home-posts"></div>
+      <div class="see-all"><a href="blog.html" class="btn ghost">All articles</a></div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <div class="wrap reveal">
+      <div class="sec-num">Contact</div>
+      <h2 id="contact-title"></h2>
+      <p id="contact-text"></p>
+      <form class="contact-form" id="contact-form">
+        <div class="row">
+          <input name="name" placeholder="Your name" required maxlength="200">
+          <input name="email" type="email" placeholder="Your email" required maxlength="200">
+        </div>
+        <textarea name="message" placeholder="Your message" required maxlength="5000"></textarea>
+        <input name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
+        <button class="btn solid" type="submit">Send message</button>
+        <div class="form-note" id="form-note"></div>
+      </form>
+      <div class="or-line">or find me on</div>
+      <div class="btns">
+        <a id="btn-linkedin" class="btn ghost" target="_blank" rel="noopener" hidden>LinkedIn</a>
+        <a id="btn-website" class="btn ghost" target="_blank" rel="noopener" hidden>Lusitania Investments</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><span>© <span id="yr"></span> <span class="js-name">David Caramelo</span></span><span>Angers, France</span></div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="site.js"></script>
+</body>
+</html>

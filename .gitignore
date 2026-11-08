@@ -1,0 +1,7 @@
+# Never upload secrets or local-only files
+.env
+*.secret
+secrets/
+.DS_Store
+Thumbs.db
+desktop.ini
