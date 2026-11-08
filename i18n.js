@@ -23,6 +23,7 @@ const UI = {
   sec_education: { en: "Education", fr: "Formation" },
   sec_journal: { en: "Journal", fr: "Journal" },
   sec_personal: { en: "Personal", fr: "Personnel" },
+  lived_label: { en: "Lived & worked in", fr: "J'ai vécu et travaillé en" },
 
   h_services: { en: "What I can do for you", fr: "Ce que je peux faire pour vous" },
   h_experience: { en: "Professional path", fr: "Parcours professionnel" },
@@ -212,6 +213,7 @@ const FR_CONTENT = {
   "I follow the matches every week. Football has always been part of my life.":
     "Je suis les matchs chaque semaine. Le football a toujours fait partie de ma vie.",
   "Travelling": "Voyager",
+  "Portugal": "Portugal", "Netherlands": "Pays-Bas",
   "I've lived and worked in three countries and explored Europe, South America and more. Every trip teaches me something about people and places.":
     "J'ai vécu et travaillé dans trois pays et exploré l'Europe, l'Amérique du Sud et bien plus. Chaque voyage m'apprend quelque chose sur les gens et les lieux.",
   // Same in both languages (names, places, levels)

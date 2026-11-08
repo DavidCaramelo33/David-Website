@@ -30,7 +30,7 @@ const FALLBACK = {
     email: "", business_email: "", phone: "", location: "Angers, France", work_note: "Remote or relocation within France",
     results: [["200+", "Properties marketed for Lusitania Investments"], ["900+", "Website views for Lusitania Investments"], ["50K+", "Views across social media"], ["2", "Countries connected: France & Portugal"]],
     booking_url: "", booking_enabled: true,
-    personal_title: "Beyond work", personal_text: ""
+    personal_title: "Beyond work", personal_text: "", lived_in: ["Portugal", "Netherlands", "France"]
   },
   experience: [
     { title: "Founder", org: "Lusitania Investments", logo_url: "images/logos/lusitania.png", link: "https://lusitaniainvestments.fr/", place: "Angers, France", period: "2025 — Present", description: "Founded and built a real estate investment company connecting international investors with property opportunities in Portugal. I lead business development and the full marketing strategy: brand, website content, SEO, email marketing and social media." },
@@ -332,7 +332,10 @@ function renderHome(c) {
   const interests = c.interests || [];
   $("#personal").hidden = !interests.length && !p.personal_text;
   $("#personal-title").textContent = tr(p.personal_title || "Beyond work");
-  $("#personal-text").innerHTML = String(p.personal_text || "").split(/\n{2,}/).filter(t => t.trim()).map(t => `<p>${esc(tr(t.trim()))}</p>`).join("");
+  const FLAGS = { portugal: "pt", netherlands: "nl", "the netherlands": "nl", france: "fr", spain: "es", brazil: "br", belgium: "be", germany: "de", "united kingdom": "gb", uk: "gb", italy: "it", switzerland: "ch" };
+  const lived = p.lived_in || [];
+  $("#personal-text").innerHTML = String(p.personal_text || "").split(/\n{2,}/).filter(t => t.trim()).map(t => `<p>${esc(tr(t.trim()))}</p>`).join("") +
+    (lived.length ? `<div class="lived"><div class="lived-label">${ui("lived_label")}</div><div class="lived-row">${lived.map(c => `<span class="lived-chip">${FLAGS[String(c).toLowerCase().trim()] ? `<img class="flag" src="images/flags/${FLAGS[String(c).toLowerCase().trim()]}.svg" alt="">` : ""}${esc(tr(c))}</span>`).join("")}</div></div>` : "");
   $("#interest-list").innerHTML = interests.map(it => `
     <div class="interest reveal">
       ${it.image_url ? `<div class="interest-img"><img src="${esc(safeUrl(it.image_url))}" alt="${esc(tr(it.title))}" loading="lazy"></div>` : `<span class="interest-icon">${interestIcon(it.title)}</span>`}

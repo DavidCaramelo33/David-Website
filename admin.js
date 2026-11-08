@@ -321,6 +321,7 @@ const PROFILE_FIELDS = [
   { name: "languages", label: "Languages", hint: "one per line: language | level", type: "textarea", pairs: true },
   { name: "services", label: "Services — “What I can do for you”", hint: "one per line: title | short description · leave empty to hide the section", type: "textarea", pairs: true },
   { name: "personal_title", label: "Personal section — title", hint: "e.g. Beyond work" },
+  { name: "lived_in", label: "Countries you have lived and worked in", hint: "one per line · shown with flags under your personal intro", type: "textarea", lines: true },
   { name: "personal_text", label: "Personal section — intro", hint: "a few lines about you as a person · empty line between paragraphs", type: "textarea" },
   { name: "results", label: "Results in numbers", hint: "one per line: number | what it means, e.g. 108 | Properties marketed · leave empty to hide the section", type: "textarea", pairs: true }
 ];
