@@ -41,7 +41,7 @@ function fieldHtml(f, val) {
     default: return `<label>${lbl}<input type="${f.type || "text"}" name="${f.name}" value="${esc(v)}" ${f.required ? "required" : ""}></label>`;
   }
 }
-function wireImages(root, folder) {
+function wireImages(root, folder, onUploaded) {
   root.querySelectorAll("[data-img]").forEach(box => {
     const doc = !!box.dataset.doc;
     const img = box.querySelector(doc ? "a" : "img"), hid = box.querySelector("input[type=hidden]"), file = box.querySelector("input[type=file]"), clr = box.querySelector("[data-clear]");
@@ -50,7 +50,7 @@ function wireImages(root, folder) {
       if (file.files[0].size > 8 * 1024 * 1024) { toast("File is too large (max 8 MB)", true); return; }
       toast("Uploading…");
       const url = await upload(file.files[0], folder);
-      if (url) { hid.value = url; if (doc) img.href = url; else img.src = url; img.hidden = false; clr.hidden = false; toast(doc ? "File uploaded. Click Save to publish it" : "Image uploaded"); }
+      if (url) { hid.value = url; if (doc) img.href = url; else img.src = url; img.hidden = false; clr.hidden = false; toast(doc ? "File uploaded. Click Save to publish it" : "Image uploaded"); onUploaded && onUploaded(box.dataset.img, url, box); }
       file.value = "";
     });
     clr.addEventListener("click", () => { hid.value = ""; img.hidden = true; clr.hidden = true; });
@@ -238,6 +238,7 @@ function editPost(p) {
         ${fieldHtml({ name: "slug", label: "Web address", hint: "filled in automatically" }, p.slug)}
       </div>
       ${fieldHtml({ name: "excerpt", label: "Short summary", hint: "shown on the article cards and in Google", type: "textarea" }, p.excerpt)}
+      ${fieldHtml({ name: "pdf_url", label: "PDF (shown as a flipbook)", hint: "optional · upload a PDF and readers can turn its pages like a magazine · its first page becomes the cover", type: "file", accept: ".pdf,application/pdf" }, p.pdf_url)}
       ${fieldHtml({ name: "cover_url", label: "Cover image", type: "image" }, p.cover_url)}
     </div>
     <div class="card form">
@@ -250,7 +251,17 @@ function editPost(p) {
     <div class="form-actions"><button class="btn" type="submit">Save</button><button class="btn ghost" type="button" id="cancel">Cancel</button></div>
   </form>`;
   const form = document.getElementById("f");
-  wireImages(form, "blog");
+  wireImages(form, "blog", async (name, url, box) => {
+    if (name !== "pdf_url" || typeof pdfFirstPageBlob !== "function") return;
+    const coverBox = form.querySelector("[data-img=cover_url]");
+    if (coverBox.querySelector("input[type=hidden]").value) return; // keep a cover you chose yourself
+    try {
+      toast("Making the cover from the first page…");
+      const blob = await pdfFirstPageBlob(url);
+      const cover = await upload(new File([blob], "pdf-cover.jpg", { type: "image/jpeg" }), "blog");
+      if (cover) { coverBox.querySelector("input[type=hidden]").value = cover; const im = coverBox.querySelector("img"); im.src = cover; im.hidden = false; coverBox.querySelector("[data-clear]").hidden = false; toast("Cover made from the first page. Click Save to publish"); }
+    } catch (e) { console.warn(e); }
+  });
   const title = form.elements.title, slug = form.elements.slug, body = form.elements.body, prev = form.querySelector(".preview");
   let slugTouched = !!p.slug;
   slug.addEventListener("input", () => slugTouched = true);
@@ -285,6 +296,8 @@ function editPost(p) {
       published_at: published ? (p.published_at || new Date().toISOString()) : p.published_at || null
     };
     if (!data.slug) { toast("Please add a title", true); return; }
+    // only send the PDF field when it is used or was used before (works even before the PDF database update)
+    if (form.elements.pdf_url.value || p.pdf_url) data.pdf_url = form.elements.pdf_url.value || null;
     const r = isNew ? await sb.from("posts").insert(data) : await sb.from("posts").update(data).eq("id", p.id);
     if (r.error && /duplicate|unique/i.test(r.error.message)) { toast("Another article already uses this web address. Change it slightly.", true); return; }
     if (!fail(r, "Save failed")) { toast(published ? "Saved and published" : "Saved as draft"); showPosts(); }

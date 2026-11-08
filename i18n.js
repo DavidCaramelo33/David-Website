@@ -81,6 +81,11 @@ const UI = {
   blog_empty: { en: "No articles yet. Check back soon.", fr: "Aucun article pour le moment. Revenez bientôt." },
   blog_back: { en: "← All articles", fr: "← Tous les articles" },
   blog_404: { en: "Article not found", fr: "Article introuvable" },
+  flip_loading: { en: "Preparing the document…", fr: "Préparation du document…" },
+  flip_page: { en: "Page", fr: "Page" },
+  flip_fullscreen: { en: "Full screen", fr: "Plein écran" },
+  flip_download: { en: "Download PDF", fr: "Télécharger le PDF" },
+  flip_error: { en: "The document could not be displayed.", fr: "Le document n'a pas pu être affiché." },
   present: { en: "Present", fr: "Aujourd'hui" }
 };
 

@@ -424,9 +424,13 @@ async function renderPost() {
   const md = document.querySelector('meta[name="description"]'); if (md) md.content = post.excerpt || post.title;
   box.innerHTML = `<div class="meta">${esc([post.tag, fmtDate(post.published_at)].filter(Boolean).join(" · "))}</div>
     <h1>${esc(post.title)}</h1>
-    ${post.cover_url ? `<img class="cover" src="${esc(safeUrl(post.cover_url))}" alt="">` : ""}
+    ${post.pdf_url ? `<div class="flipbook" id="flipbook"></div>` : (post.cover_url ? `<img class="cover" src="${esc(safeUrl(post.cover_url))}" alt="">` : "")}
     <div class="prose">${markdown(post.body)}</div>
     <a class="back" href="blog.html">${ui("blog_back")}</a>`;
+  if (post.pdf_url && typeof renderFlipbook === "function") {
+    box.classList.add("has-flipbook");
+    renderFlipbook($("#flipbook"), safeUrl(post.pdf_url), ui);
+  }
 }
 
 /* ---------- visits & messages ---------- */

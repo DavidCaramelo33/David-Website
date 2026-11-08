@@ -353,3 +353,21 @@ a.tool:hover .arrow{opacity:1}
 .interest p{color:var(--muted);font-size:.92rem}
 @media (max-width:960px){.personal-grid{grid-template-columns:1fr;gap:32px}.personal-text:empty + .interests{grid-template-columns:1fr 1fr}}
 @media (max-width:560px){.interests,.personal-text:empty + .interests{grid-template-columns:1fr}}
+
+/* ---------- PDF flipbook ---------- */
+.article.has-flipbook{max-width:1100px}
+.article.has-flipbook .prose{max-width:720px;margin:0 auto}
+.flipbook{margin:0 0 48px;background:var(--bg-alt);border:1px solid var(--line);padding:34px 24px 0;outline:none}
+.flipbook:fullscreen{background:#1d1c1a;display:flex;flex-direction:column;justify-content:center;padding:24px}
+.fb-stage{display:flex;justify-content:center}
+.fb-book{margin:0 auto;box-shadow:0 30px 60px -30px rgba(29,28,26,.55)}
+.fb-status{padding:80px 20px;text-align:center;color:var(--muted);font-size:.95rem}
+.fb-status a{color:var(--accent-dark);border-bottom:1px solid var(--accent)}
+.fb-bar{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:20px 0 24px}
+.fb-bar button,.fb-bar a{background:var(--card);border:1px solid var(--line);color:var(--ink);font:inherit;font-size:.78rem;letter-spacing:.08em;padding:8px 14px;cursor:pointer;transition:border-color .2s}
+.fb-bar button:hover,.fb-bar a:hover{border-color:var(--accent)}
+.fb-prev,.fb-next{font-size:1.1rem!important;padding:4px 14px!important}
+.fb-count{font-size:.85rem;color:var(--muted);min-width:90px;text-align:center}
+.fb-sep{width:12px}
+.flipbook:fullscreen .fb-count{color:#b5afa4}
+@media (max-width:680px){.flipbook{padding:20px 8px 0;margin-left:-8px;margin-right:-8px}.fb-sep{display:none}}
