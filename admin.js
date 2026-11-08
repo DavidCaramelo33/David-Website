@@ -338,13 +338,15 @@ async function refreshBadge() {
 
 /* ---------- dashboard ---------- */
 async function showDashboard() {
-  VT.textContent = "Dashboard"; VA.innerHTML = ""; V.onclick = null;
-  V.innerHTML = `<p class="muted">Loading…</p>`;
+  VT.textContent = ""; VA.innerHTML = ""; V.onclick = null;
+  V.innerHTML = `<p class="muted" style="text-align:center;padding:60px 0">Loading…</p>`;
   const since = new Date(Date.now() - 30 * 864e5).toISOString();
-  const [views, unread, posts] = await Promise.all([
+  const [views, unread, posts, latest, prof] = await Promise.all([
     sb.from("page_views").select("path,referrer,visitor,created_at").gte("created_at", since).order("created_at").limit(10000),
     refreshBadge(),
-    sb.from("posts").select("id", { count: "exact", head: true }).eq("published", true)
+    sb.from("posts").select("id", { count: "exact", head: true }).eq("published", true),
+    sb.from("messages").select("name,message,created_at,is_read").order("created_at", { ascending: false }).limit(3),
+    sb.from("profile").select("data->>name").eq("id", 1).maybeSingle()
   ]);
   if (fail(views, "Could not load visits")) return;
   const v = views.data, weekAgo = Date.now() - 7 * 864e5;
@@ -354,24 +356,64 @@ async function showDashboard() {
   const max = Math.max(1, ...Object.values(perDay));
   const count = (arr, fn) => Object.entries(arr.reduce((m, x) => { const k = fn(x); if (k) m[k] = (m[k] || 0) + 1; return m; }, {})).sort((a, b) => b[1] - a[1]).slice(0, 6);
   const pageName = p => { if (!p || p === "/" || /index\.html$/.test(p)) return "Home"; if (/blog/.test(p)) return "Blog"; const m = p.match(/slug=([^&]+)/); return m ? "Article: " + decodeURIComponent(m[1]) : p; };
-  const ref = r => { try { return r ? new URL(r).hostname.replace(/^www\./, "") : "Direct / unknown"; } catch { return "Direct / unknown"; } };
+  const ref = r => {
+    try {
+      if (!r) return "Direct / unknown";
+      const h = new URL(r).hostname.replace(/^www\./, "");
+      return h === location.hostname || h.endsWith("netlify.app") ? "Your own website" : h;
+    } catch { return "Direct / unknown"; }
+  };
   const pages = count(v, x => pageName(x.path)), refs = count(v, x => ref(x.referrer));
-  const rows = list => list.length ? list.map(([k, n]) => `<div class="r"><span>${esc(k)}</span><b>${n}</b></div>`).join("") : `<p class="muted">No data yet</p>`;
+  const rows = list => {
+    if (!list.length) return `<p class="muted small">No data yet</p>`;
+    const top = list[0][1];
+    return list.map(([k, n]) => `<div class="r"><div class="r-top"><span>${esc(k)}</span><b>${n}</b></div><div class="r-bar"><i style="width:${(n / top) * 100}%"></i></div></div>`).join("");
+  };
+  const hour = new Date().getHours();
+  const hello = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const first = ((prof.data && prof.data.name) || "David").split(" ")[0];
+  const week = v.filter(x => new Date(x.created_at) > weekAgo).length;
+  const short = d => new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const msgs = (latest.data || []);
   V.innerHTML = `
-    <div class="stats">
-      <div class="card stat"><b>${v.filter(x => new Date(x.created_at) > weekAgo).length}</b><span>Page views · 7 days</span></div>
-      <div class="card stat"><b>${v.length}</b><span>Page views · 30 days</span></div>
-      <div class="card stat"><b>${new Set(v.map(x => x.visitor)).size}</b><span>Unique visitors · 30 days</span></div>
-      <div class="card stat"><b>${unread}</b><span>Unread messages</span></div>
-    </div>
-    <div class="card"><h2>Visits, last 30 days</h2>
-      <div class="chart">${days.map(d => `<div style="height:${(perDay[d] / max) * 100}%" data-tip="${new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}: ${perDay[d]}"></div>`).join("")}</div>
-      <div class="chart-axis"><span>${new Date(days[0]).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span><span>Today</span></div></div>
-    <div class="grid2">
-      <div class="card"><h2>Most viewed</h2><div class="rows" style="margin-top:10px">${rows(pages)}</div></div>
-      <div class="card"><h2>Where visitors come from</h2><div class="rows" style="margin-top:10px">${rows(refs)}</div></div>
-    </div>
-    <p class="muted" style="margin-top:18px;font-size:.85rem">${posts.count || 0} published article(s). Your own visits while signed in are not counted.</p>`;
+    <div class="dash">
+      <div class="hello">
+        <div class="date">${new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}</div>
+        <h1>${hello}, ${esc(first)}</h1>
+        <p>Here's how your website is doing.</p>
+        <div class="quick">
+          <button class="btn" data-go="posts" data-new="1">+ New article</button>
+          <button class="btn ghost" data-go="projects" data-new="1">+ Add project</button>
+          <button class="btn ghost" data-go="profile">Edit profile</button>
+          <a class="btn ghost" href="index.html" target="_blank">View website ↗</a>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="card stat"><span class="dot c1"></span><b>${week}</b><span>Views this week</span></div>
+        <div class="card stat"><span class="dot c2"></span><b>${v.length}</b><span>Views · 30 days</span></div>
+        <div class="card stat"><span class="dot c3"></span><b>${new Set(v.map(x => x.visitor)).size}</b><span>Unique visitors</span></div>
+        <div class="card stat clickable" data-go="messages"><span class="dot c4"></span><b>${unread}</b><span>Unread messages</span></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Visits</h2><span class="muted small">Last 30 days</span></div>
+        <div class="chart">${days.map(d => `<div style="height:${Math.max(2, (perDay[d] / max) * 100)}%" class="${perDay[d] ? "" : "zero"}" data-tip="${short(d)}: ${perDay[d]}"></div>`).join("")}</div>
+        <div class="chart-axis"><span>${short(days[0])}</span><span>${short(days[14])}</span><span>Today</span></div>
+      </div>
+      <div class="grid3">
+        <div class="card"><div class="card-head"><h2>Most viewed</h2></div><div class="rows">${rows(pages)}</div></div>
+        <div class="card"><div class="card-head"><h2>Traffic sources</h2></div><div class="rows">${rows(refs)}</div></div>
+        <div class="card"><div class="card-head"><h2>Latest messages</h2><button class="link" data-go="messages">See all</button></div>
+          ${msgs.length ? msgs.map(m => `<div class="mini-msg ${m.is_read ? "" : "new"}"><div class="r-top"><b>${esc(m.name)}</b><span class="muted small">${short(m.created_at)}</span></div><p>${esc(m.message.slice(0, 90))}${m.message.length > 90 ? "…" : ""}</p></div>`).join("") : `<p class="muted small">No messages yet</p>`}
+        </div>
+      </div>
+      <p class="foot-note">${posts.count || 0} published article${posts.count === 1 ? "" : "s"} · Your own visits while signed in are not counted</p>
+    </div>`;
+  V.onclick = e => {
+    const b = e.target.closest("[data-go]"); if (!b) return;
+    if (!b.dataset.new) return go(b.dataset.go);
+    document.querySelectorAll("aside [data-view]").forEach(x => x.classList.toggle("on", x.dataset.view === b.dataset.go));
+    b.dataset.go === "posts" ? editPost(null) : editItem("projects", null);
+  };
 }
 
 /* ---------- navigation & auth ---------- */
