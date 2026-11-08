@@ -128,6 +128,7 @@ const FR_CONTENT = {
   "Remote or relocation within France": "À distance ou mobilité partout en France",
   "Properties marketed for Lusitania Investments": "Biens commercialisés pour Lusitania Investments",
   "Countries connected: France & Portugal": "Pays reliés : France et Portugal",
+  "Website views for Lusitania Investments": "Vues sur le site de Lusitania Investments",
 
   // Experience
   "Founder": "Fondateur",

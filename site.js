@@ -28,7 +28,7 @@ const FALLBACK = {
     hire_text: "Looking for someone to join your team in real estate marketing or development? Tell me about the role.",
     freelance_text: "Need help marketing a property, a project or your agency? Tell me what you have in mind and your timeline.",
     email: "", business_email: "", phone: "", location: "Angers, France", work_note: "Remote or relocation within France",
-    results: [["108", "Properties marketed for Lusitania Investments"], ["2", "Countries connected: France & Portugal"]],
+    results: [["200+", "Properties marketed for Lusitania Investments"], ["900+", "Website views for Lusitania Investments"], ["2", "Countries connected: France & Portugal"]],
     booking_url: ""
   },
   experience: [
