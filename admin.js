@@ -289,7 +289,7 @@ const PROFILE_FIELDS = [
   { name: "photo_url", label: "Your photo", hint: "leave empty to use the default photo", type: "image" },
   { name: "highlights", label: "Highlights under your name", hint: "one per line, keep them short", type: "textarea", lines: true },
   { name: "cv_url", label: "Your CV (PDF)", hint: "adds a “Download CV” button on the website", type: "file", accept: ".pdf,application/pdf" },
-  { name: "about_image", label: "About — picture", hint: "shown next to your About text · leave empty to use your main photo", type: "image" },
+  { name: "about_image", label: "About — picture", hint: "shown next to your About text · leave empty to use the Lisbon view", type: "image" },
   { name: "about_title", label: "About — title" },
   { name: "about", label: "About — text", hint: "empty line between paragraphs", type: "textarea", big: true },
   { name: "facts", label: "Key numbers", hint: "one per line: number | label", type: "textarea", pairs: true },

@@ -9,7 +9,7 @@ const FALLBACK = {
     status: "Open to work · Angers, France · Remote or relocation within France",
     about_title: "Where marketing meets real estate",
     about: "I'm a marketer who loves the craft of selling property: understanding a home, finding its story, and building the full strategy to put it in front of the right people.\n\nI've spent more than six years in customer relations and digital marketing, and founded Lusitania Investments, a real estate company that connects international investors with opportunities in Portugal. That's where I work on the whole process, from market research and brand to SEO, email campaigns and listings.\n\nI'm studying International Business at NHL Stenden University with a specialisation in marketing. I work in Portuguese, English, Spanish and French, and I'm looking for my next role in real estate marketing or real estate development.",
-    facts: [["6+", "Years in marketing & client relations"], ["4", "Working languages"], ["2024", "Founded Lusitania Investments"]],
+    facts: [["6+", "Years in marketing & client relations"], ["4", "Working languages"], ["2025", "Founded Lusitania Investments"]],
     expertise: ["Real estate & property marketing", "Marketing strategy & campaigns", "SEO", "Email marketing", "Content & multimedia creation", "Data & market analysis", "Project coordination"],
     tools: ["Adobe InDesign & Adobe tools", "Brevo · Mailchimp", "Google Ads · Meta Ads", "Google Analytics", "Canva · Figma", "CapCut · DaVinci Resolve", "Microsoft Office"],
     languages: [["Portuguese", "Native"], ["English", "C2"], ["Spanish", "C2"], ["French", "B1"]],
@@ -32,7 +32,7 @@ const FALLBACK = {
     booking_url: ""
   },
   experience: [
-    { title: "Founder", org: "Lusitania Investments", logo_url: "images/logos/lusitania.png", link: "https://lusitaniainvestments.fr/", place: "Angers, France", period: "2024 — Present", description: "Founded and built a real estate investment company connecting international investors with property opportunities in Portugal. I lead business development and the full marketing strategy: brand, website content, SEO, email marketing and social media." },
+    { title: "Founder", org: "Lusitania Investments", logo_url: "images/logos/lusitania.png", link: "https://lusitaniainvestments.fr/", place: "Angers, France", period: "2025 — Present", description: "Founded and built a real estate investment company connecting international investors with property opportunities in Portugal. I lead business development and the full marketing strategy: brand, website content, SEO, email marketing and social media." },
     { title: "Marketing Intern", org: "Weenat", logo_url: "images/logos/weenat.png", link: "https://weenat.com/", place: "Nantes, France", period: "2025 — 2026", description: "Contributed to digital marketing campaigns through content creation, social media management and market analysis, helping increase brand visibility and engagement." },
     { title: "Freelance Marketing Manager", org: "", place: "Remote", period: "2019 — Present", description: "Creating targeted social media content for clients to increase visibility and engage potential customers." },
     { title: "Sales Assistant", org: "Fitness Up", logo_url: "images/logos/fitnessup.png", link: "https://fitnessup.pt/", place: "Oeiras, Portugal", period: "2021 — 2022", description: "Delivered high-quality customer service with personalised advice and tailored membership plans, and promoted the gym's services." }
@@ -257,7 +257,7 @@ function renderHome(c) {
   $("#service-list").innerHTML = services.map(([t, d], i) => `
     <div class="service reveal"><div class="service-top"><span class="service-icon">${serviceIcon(t)}</span><span class="service-num">${String(i + 1).padStart(2, "0")}</span></div><h3>${esc(tr(t))}</h3><p>${esc(tr(d || ""))}</p></div>`).join("");
 
-  $("#about-photo").innerHTML = `<img src="${esc(safeUrl(p.about_image || "images/david.jpg"))}" alt="${esc(p.name)}">`;
+  $("#about-photo").innerHTML = `<img src="${esc(safeUrl(p.about_image || "images/about.jpg"))}" alt="${esc(p.name)}">`;
   $("#about-title").textContent = tr(p.about_title);
   $("#about-text").innerHTML = String(p.about || "").split(/\n{2,}/).map(t => `<p>${esc(tr(t.trim()))}</p>`).join("") +
     `<div class="facts">${(p.facts || []).map(([n, l]) => `<div class="fact"><b data-count="${esc(n)}">${esc(n)}</b><span>${esc(tr(l))}</span></div>`).join("")}</div>`;
