@@ -289,7 +289,8 @@ const PROFILE_FIELDS = [
 
 const CONTACT_FIELDS = [
   { section: "Contact details shown on the website", note: "Leave a field empty to hide it." },
-  { name: "email", label: "Email", type: "email" },
+  { name: "email", label: "Personal email", type: "email" },
+  { name: "business_email", label: "Business email", hint: "e.g. your Lusitania Investments address", type: "email" },
   { name: "phone", label: "Phone" },
   { name: "location", label: "Location", hint: "e.g. Angers, France" },
   { name: "work_note", label: "Work preference", hint: "shown next to your status, e.g. Remote or relocation within France" },

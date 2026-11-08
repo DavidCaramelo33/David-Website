@@ -27,7 +27,7 @@ const FALLBACK = {
     cv_url: "",
     hire_text: "Looking for someone to join your team in real estate marketing or development? Tell me about the role.",
     freelance_text: "Need help marketing a property, a project or your agency? Tell me what you have in mind and your timeline.",
-    email: "", phone: "", location: "Angers, France", work_note: "Remote or relocation within France"
+    email: "", business_email: "", phone: "", location: "Angers, France", work_note: "Remote or relocation within France"
   },
   experience: [
     { title: "Founder", org: "Lusitania Investments", logo_url: "images/logos/lusitania.png", link: "https://lusitaniainvestments.fr/", place: "Angers, France", period: "2024 — Present", description: "Founded and built a real estate investment company connecting international investors with property opportunities in Portugal. I lead business development and the full marketing strategy: brand, website content, SEO, email marketing and social media." },
@@ -265,6 +265,7 @@ function renderHome(c) {
 
   const direct = [];
   if (p.email) direct.push(`<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>`);
+  if (p.business_email) direct.push(`<a href="mailto:${esc(p.business_email)}">${esc(p.business_email)}</a>`);
   if (p.phone) direct.push(`<a href="tel:${esc(p.phone.replace(/[^\d+]/g, ""))}">${esc(p.phone)}</a>`);
   $("#direct").innerHTML = direct.join(`<span>·</span>`);
   observeReveal();
@@ -318,6 +319,23 @@ function trackVisit() {
   d.from("page_views").insert({ path: location.pathname + location.search, referrer: document.referrer.slice(0, 500), visitor: v }).then(() => {});
 }
 
+/* Sends David an email for every new contact message (via FormSubmit). The message is already saved in the admin inbox, so a failure here is harmless. */
+function notifyByEmail(m) {
+  const to = (window.SITE_CONFIG || {}).NOTIFY_EMAIL;
+  if (!to) return;
+  const label = { job: "job offer", freelance: "freelance request" }[m.kind] || "message";
+  fetch(`https://formsubmit.co/ajax/${encodeURIComponent(to)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({
+      _subject: `New ${label} from ${m.name} — your website`,
+      _template: "table", _captcha: "false", _replyto: m.email,
+      Type: label.charAt(0).toUpperCase() + label.slice(1), Name: m.name, Email: m.email, Message: m.message,
+      "Open your inbox": location.origin + "/admin.html"
+    })
+  }).catch(() => {});
+}
+
 function setupContactForm() {
   const f = $("#contact-form"); if (!f) return;
   const note = $("#form-note");
@@ -331,7 +349,9 @@ function setupContactForm() {
     const kind = ["job", "freelance"].includes(data.kind) ? data.kind : "general";
     const r = await d.from("messages").insert({ name: data.name.trim(), email: data.email.trim(), message: data.message.trim(), kind });
     if (r.error) { note.textContent = "Sorry, something went wrong. Please try LinkedIn instead."; return; }
-    f.reset(); note.textContent = "Thank you, your message has been sent. I'll get back to you soon.";
+    notifyByEmail({ name: data.name.trim(), email: data.email.trim(), message: data.message.trim(), kind });
+    f.reset(); f.elements.kind.value = kind; // keep the Hire me / Freelance choice
+    note.textContent = "Thank you, your message has been sent. I'll get back to you soon.";
   });
 }
 
