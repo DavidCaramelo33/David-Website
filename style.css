@@ -208,7 +208,7 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 
 /* ---------- Hero photo & highlights ---------- */
 .portrait{background:#fff}
-.portrait img{object-position:50% 12%}
+.portrait img{object-position:50% 0}
 .highlights{list-style:none;display:flex;flex-wrap:wrap;gap:10px;margin:-14px 0 30px}
 .highlights li{font-size:.8rem;letter-spacing:.04em;color:var(--ink);border:1px solid var(--line);background:var(--card);padding:7px 14px}
 .highlights:empty{display:none}

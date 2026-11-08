@@ -258,7 +258,7 @@ function renderHome(c) {
   const av = siteAvail(p);
   $("#hero-status").textContent = [ui("avail_" + av), p.location, av === "none" ? "" : tr(p.work_note)].filter(Boolean).join(" · ");
   $(".status i").className = av === "none" ? "off" : av === "freelance" ? "free" : "";
-  $("#portrait").innerHTML = `<img src="${esc(safeUrl(p.photo_url || "images/david.jpg"))}" alt="${esc(p.name)}">`;
+  $("#portrait").innerHTML = `<img src="${esc(safeUrl(p.photo_url || "images/david-hero.jpg"))}" alt="${esc(p.name)}">`;
   $("#hero-highlights").innerHTML = (p.highlights || []).map(h => `<li>${esc(tr(h))}</li>`).join("");
   const cv = $("#btn-cv");
   cv.hidden = !p.cv_url; if (p.cv_url) cv.href = safeUrl(p.cv_url);
