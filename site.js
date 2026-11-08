@@ -29,7 +29,8 @@ const FALLBACK = {
     freelance_text: "Need help marketing a property, a project or your agency? Tell me what you have in mind and your timeline.",
     email: "", business_email: "", phone: "", location: "Angers, France", work_note: "Remote or relocation within France",
     results: [["200+", "Properties marketed for Lusitania Investments"], ["900+", "Website views for Lusitania Investments"], ["50K+", "Views across social media"], ["2", "Countries connected: France & Portugal"]],
-    booking_url: ""
+    booking_url: "",
+    personal_title: "Beyond work", personal_text: ""
   },
   experience: [
     { title: "Founder", org: "Lusitania Investments", logo_url: "images/logos/lusitania.png", link: "https://lusitaniainvestments.fr/", place: "Angers, France", period: "2025 — Present", description: "Founded and built a real estate investment company connecting international investors with property opportunities in Portugal. I lead business development and the full marketing strategy: brand, website content, SEO, email marketing and social media." },
@@ -51,6 +52,7 @@ const FALLBACK = {
     { kind: "certification", title: "English C2 — IELTS Academic", logo_url: "images/logos/ielts.png", link: "https://ielts.org/", period: "2020" },
     { kind: "certification", title: "X-Honours Programme, NHL Stenden", logo_url: "images/logos/nhlstenden.png", link: "https://www.nhlstenden.com/", period: "2022", description: "Leadership development and cross-cultural business." }
   ],
+  interests: [],
   portfolio: [
     { title: "Lusitania Investments website", category: "Website", image_url: "images/projects/lusitania.jpg", link: "https://lusitaniainvestments.fr/", description: "" }
   ],
@@ -98,19 +100,21 @@ async function loadContent() {
   const d = getDb();
   if (!d) return cacheGet("content") || FALLBACK;
   try {
-    const [p, ex, pr, ed, po, pf] = await Promise.all([
+    const [p, ex, pr, ed, po, pf, it] = await Promise.all([
       d.from("profile").select("data").eq("id", 1).maybeSingle(),
       d.from("experience").select("*").eq("visible", true).order("sort"),
       d.from("projects").select("*").eq("visible", true).order("sort"),
       d.from("education").select("*").eq("visible", true).order("sort"),
       d.from("posts").select("slug,title,excerpt,cover_url,tag,published_at").eq("published", true).order("published_at", { ascending: false }).limit(3),
-      d.from("portfolio").select("*").eq("visible", true).order("sort")
+      d.from("portfolio").select("*").eq("visible", true).order("sort"),
+      d.from("interests").select("*").eq("visible", true).order("sort")
     ]);
     if (p.error || ex.error) throw p.error || ex.error;
     const content = {
       profile: { ...FALLBACK.profile, ...(p.data?.data || {}) },
       experience: ex.data, projects: pr.data || [], education: ed.data || [], posts: po.data || [],
-      portfolio: pf.error ? FALLBACK.portfolio : (pf.data || [])
+      portfolio: pf.error ? FALLBACK.portfolio : (pf.data || []),
+      interests: it.error ? [] : (it.data || [])
     };
     cacheSet("content", content);
     return content;
@@ -148,6 +152,23 @@ const ICONS = {
   visual: '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
   other: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>'
 };
+const HOBBY_ICONS = [
+  [/travel|trip|voyage|viag|explor/, '<path d="M2 16l20-7-20-7 4 7-4 7z" transform="rotate(-20 12 12)"/>'],
+  [/foot|soccer|sport|ball|padel|tennis|basket/, '<circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 4.5h-5L8 10z"/><path d="M12 3v4M21 10.5l-5 -.5M17.5 19l-3-4.5M6.5 19l3-4.5M3 10.5l5-.5"/>'],
+  [/gym|fitness|workout|run|train/, '<path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10"/>'],
+  [/music|guitar|piano|concert|sing/, '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>'],
+  [/cook|food|cuisine|chef|gastro|wine/, '<path d="M6 13a6 6 0 0 1 12 0z"/><path d="M4 13h16M12 7V4M9 17h6l-1 3h-4z"/>'],
+  [/read|book|livre|learn/, '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M19 19v2H6"/>'],
+  [/photo|camera|film|video|cinema|movie/, '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'],
+  [/car|drive|moto/, '<path d="M5 16h14l-1.5-5.5A2 2 0 0 0 15.6 9H8.4a2 2 0 0 0-1.9 1.5z"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/>'],
+  [/beach|surf|sea|ocean|swim|mer|praia/, '<path d="M2 17c2 0 2-1.5 4-1.5S8 17 10 17s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><circle cx="16" cy="7" r="3"/>'],
+  [/architect|design|interior|house|home|real estate/, '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>']
+];
+function interestIcon(title) {
+  const t = String(title).toLowerCase();
+  const hit = HOBBY_ICONS.find(([re]) => re.test(t));
+  return `<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${hit ? hit[1] : '<path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/>'}</svg>`;
+}
 function serviceIcon(title) {
   const t = String(title).toLowerCase();
   const k = /strateg|property|launch|plan/.test(t) ? "strategy" : /visual|video|photo|design|brochure/.test(t) ? "visual" : /mail|newsletter|crm/.test(t) ? "email" : /seo|search|google|content/.test(t) ? "seo" : "other";
@@ -300,6 +321,17 @@ function renderHome(c) {
   const eduItem = e => `<div class="edu-item">${logoBox(e.logo_url, e.title, e.link)}<div><div class="when">${esc(tr(e.period))}</div><h3>${esc(tr(e.title))}</h3>${e.description ? `<p>${esc(tr(e.description))}</p>` : ""}</div></div>`;
   $("#edu-left").innerHTML = c.education.filter(e => e.kind === "education").map(eduItem).join("");
   $("#edu-right").innerHTML = c.education.filter(e => e.kind !== "education").map(eduItem).join("");
+
+  // Beyond work: personal intro + interests
+  const interests = c.interests || [];
+  $("#personal").hidden = !interests.length && !p.personal_text;
+  $("#personal-title").textContent = tr(p.personal_title || "Beyond work");
+  $("#personal-text").innerHTML = String(p.personal_text || "").split(/\n{2,}/).filter(t => t.trim()).map(t => `<p>${esc(tr(t.trim()))}</p>`).join("");
+  $("#interest-list").innerHTML = interests.map(it => `
+    <div class="interest reveal">
+      ${it.image_url ? `<div class="interest-img"><img src="${esc(safeUrl(it.image_url))}" alt="${esc(tr(it.title))}" loading="lazy"></div>` : `<span class="interest-icon">${interestIcon(it.title)}</span>`}
+      <h3>${esc(tr(it.title))}</h3>${it.description ? `<p>${esc(tr(it.description))}</p>` : ""}
+    </div>`).join("");
 
   const blog = $("#home-blog");
   if (c.posts && c.posts.length) { blog.hidden = false; $("#home-posts").innerHTML = c.posts.map(postCard).join(""); }

@@ -22,6 +22,7 @@ const UI = {
   sec_skills: { en: "Skills", fr: "Compétences" },
   sec_education: { en: "Education", fr: "Formation" },
   sec_journal: { en: "Journal", fr: "Journal" },
+  sec_personal: { en: "Personal", fr: "Personnel" },
 
   h_services: { en: "What I can do for you", fr: "Ce que je peux faire pour vous" },
   h_experience: { en: "Professional path", fr: "Parcours professionnel" },
@@ -176,6 +177,7 @@ const FR_CONTENT = {
   "São João do Estoril Vocational High School, Portugal. Specialisation in Marketing, Advertising & Public Relations.":
     "Lycée professionnel de São João do Estoril, Portugal. Spécialisation marketing, publicité et relations publiques.",
   "Leadership development and cross-cultural business.": "Développement du leadership et commerce interculturel.",
+  "Beyond work": "En dehors du travail",
 
   // Same in both languages (names, places, levels)
   "PT · EN · ES · FR": "PT · EN · ES · FR", "SEO": "SEO", "C2": "C2", "B1": "B1",

@@ -70,6 +70,16 @@ function readForm(form, fields) {
 
 /* ---------- generic list editor (projects, experience, education) ---------- */
 const LISTS = {
+  interests: {
+    title: "Personal life", folder: "interests",
+    sub: r => (r.description || "").slice(0, 80),
+    fields: [
+      { name: "title", label: "Interest or hobby", hint: "e.g. Travelling, Football, Cooking, Photography", required: true },
+      { name: "description", label: "A few words about it", type: "textarea" },
+      { name: "image_url", label: "Picture", hint: "optional · without a picture, a matching icon is shown", type: "image" },
+      { name: "visible", label: "Visible on the website", type: "bool" }
+    ]
+  },
   portfolio: {
     title: "Portfolio", folder: "portfolio",
     sub: r => [r.category, r.link ? "has link" : ""].filter(Boolean).join(" · "),
@@ -297,6 +307,8 @@ const PROFILE_FIELDS = [
   { name: "tools", label: "Tools", hint: "one per line", type: "textarea", lines: true },
   { name: "languages", label: "Languages", hint: "one per line: language | level", type: "textarea", pairs: true },
   { name: "services", label: "Services — “What I can do for you”", hint: "one per line: title | short description · leave empty to hide the section", type: "textarea", pairs: true },
+  { name: "personal_title", label: "Personal section — title", hint: "e.g. Beyond work" },
+  { name: "personal_text", label: "Personal section — intro", hint: "a few lines about you as a person · empty line between paragraphs", type: "textarea" },
   { name: "results", label: "Results in numbers", hint: "one per line: number | what it means, e.g. 108 | Properties marketed · leave empty to hide the section", type: "textarea", pairs: true }
 ];
 
@@ -594,12 +606,13 @@ async function showDashboard() {
 async function showTranslations() {
   VT.textContent = "Translations (FR)"; VA.innerHTML = ""; V.onclick = null;
   V.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0">Loading…</p>`;
-  const [p, ex, pr, ed, pf] = await Promise.all([
+  const [p, ex, pr, ed, pf, it] = await Promise.all([
     loadProfile(),
     sb.from("experience").select("*").order("sort"),
     sb.from("projects").select("*").order("sort"),
     sb.from("education").select("*").order("sort"),
-    sb.from("portfolio").select("*").order("sort")
+    sb.from("portfolio").select("*").order("sort"),
+    sb.from("interests").select("*").order("sort")
   ]);
   if (!p) return;
   const saved = p.fr || {};
@@ -624,6 +637,9 @@ async function showTranslations() {
   (pr.data || []).forEach(x => { add("Projects", x.title); add("Projects", x.tag); add("Projects", x.description); });
   (pf.data || []).forEach(x => { add("Portfolio", x.title); add("Portfolio", x.category); add("Portfolio", x.description); });
   (ed.data || []).forEach(e => { add("Education", e.title); add("Education", e.description); });
+  add("Personal life", p.personal_title);
+  String(p.personal_text || "").split(/\n{2,}/).forEach(t => add("Personal life", t));
+  ((it && it.data) || []).forEach(x => { add("Personal life", x.title); add("Personal life", x.description); });
   ["contact_title", "contact_text", "hire_text", "freelance_text"].forEach(k => add("Contact", p[k]));
 
   const all = groups.flatMap(g => g.items);
@@ -648,7 +664,7 @@ async function showTranslations() {
 }
 
 /* ---------- navigation & auth ---------- */
-const VIEWS = { portfolio: () => showList("portfolio"), translations: showTranslations, dashboard: showDashboard, contact: showContactCentral, messages: showContactCentral, posts: showPosts, profile: showProfile, projects: () => showList("projects"), experience: () => showList("experience"), education: () => showList("education") };
+const VIEWS = { interests: () => showList("interests"), portfolio: () => showList("portfolio"), translations: showTranslations, dashboard: showDashboard, contact: showContactCentral, messages: showContactCentral, posts: showPosts, profile: showProfile, projects: () => showList("projects"), experience: () => showList("experience"), education: () => showList("education") };
 function go(view) {
   document.querySelectorAll("aside [data-view]").forEach(b => b.classList.toggle("on", b.dataset.view === view));
   document.body.classList.remove("nav-open");
