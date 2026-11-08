@@ -1,0 +1,11 @@
+# Netlify settings: only the website files go online.
+# Setup notes, the database script and the preview helper stay private.
+[build]
+  command = "mkdir -p dist && cp *.html *.js *.css dist/ && cp -r images dist/"
+  publish = "dist"
+
+# Keep the admin page out of Google
+[[headers]]
+  for = "/admin.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"

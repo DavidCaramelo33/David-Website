@@ -20,11 +20,12 @@
 Claude puts your email into `supabase/schema.sql`, gives it to you to paste into **SQL Editor → New query → Run**, and fills in `config.js`.
 
 ## Step 4 — Put the site online (Netlify, free), ~3 min
-1. Go to netlify.com → sign up (free).
-2. **Add new site → Deploy manually** → drag the whole `D:\DavidCaramelo` folder onto the page.
-3. You get a link like `david-caramelo.netlify.app`. You can rename it in Site settings, or connect your own domain later.
-To update the site after Claude changes files: drag the folder again (Deploys → drag and drop).
-Content you change in the admin panel (texts, projects, blog posts, photos) appears instantly, with no re-upload needed.
+1. Go to netlify.com → **Sign up with GitHub**.
+2. **Add new site → Import an existing project → GitHub** → pick **David-Website**.
+3. Leave the build settings as they are (they come from `netlify.toml`) → **Deploy**.
+4. You get a link like `xxxx.netlify.app`. Rename it in Site configuration → Change site name, or connect your own domain later.
+From then on, every push to GitHub updates the live site automatically (about 30 seconds).
+Content you change in the admin panel (texts, projects, blog posts, photos) appears instantly, with no push needed.
 
 ## Day to day
 - Website: your Netlify link (or double-click `index.html` on your PC)
