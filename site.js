@@ -326,6 +326,7 @@ function notifyByEmail(m) {
   const label = { job: "job offer", freelance: "freelance request" }[m.kind] || "message";
   fetch(`https://formsubmit.co/ajax/${encodeURIComponent(to)}`, {
     method: "POST",
+    referrerPolicy: "origin", // FormSubmit activation is per page address: always send the homepage address
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify({
       _subject: `New ${label} from ${m.name} — your website`,
