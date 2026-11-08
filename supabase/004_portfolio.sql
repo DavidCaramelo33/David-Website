@@ -14,3 +14,6 @@ create policy "admin write" on portfolio for all using (is_admin()) with check (
 insert into portfolio (title, category, image_url, link, sort)
 select 'Lusitania Investments website', 'Website', 'images/projects/lusitania.jpg', 'https://lusitaniainvestments.fr/', 1
 where not exists (select 1 from portfolio);
+
+-- Make the website see the new table straight away
+notify pgrst, 'reload schema';
