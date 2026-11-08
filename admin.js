@@ -33,18 +33,24 @@ function fieldHtml(f, val) {
         <input type="hidden" name="${f.name}" value="${esc(v)}">
         <input type="file" accept="image/*">
         <button type="button" class="btn ghost sm" data-clear ${v ? "" : "hidden"}>Remove image</button></div>`;
+    case "file": return `<label>${lbl}</label><div class="img-field" data-img="${f.name}" data-doc="1">
+        <a href="${esc(v)}" target="_blank" class="btn ghost sm" style="text-decoration:none" ${v ? "" : "hidden"}>View current file ↗</a>
+        <input type="hidden" name="${f.name}" value="${esc(v)}">
+        <input type="file" accept="${f.accept || ".pdf"}">
+        <button type="button" class="btn ghost sm" data-clear ${v ? "" : "hidden"}>Remove file</button></div>`;
     default: return `<label>${lbl}<input type="${f.type || "text"}" name="${f.name}" value="${esc(v)}" ${f.required ? "required" : ""}></label>`;
   }
 }
 function wireImages(root, folder) {
   root.querySelectorAll("[data-img]").forEach(box => {
-    const img = box.querySelector("img"), hid = box.querySelector("input[type=hidden]"), file = box.querySelector("input[type=file]"), clr = box.querySelector("[data-clear]");
+    const doc = !!box.dataset.doc;
+    const img = box.querySelector(doc ? "a" : "img"), hid = box.querySelector("input[type=hidden]"), file = box.querySelector("input[type=file]"), clr = box.querySelector("[data-clear]");
     file.addEventListener("change", async () => {
       if (!file.files[0]) return;
-      if (file.files[0].size > 8 * 1024 * 1024) { toast("Image is too large (max 8 MB)", true); return; }
+      if (file.files[0].size > 8 * 1024 * 1024) { toast("File is too large (max 8 MB)", true); return; }
       toast("Uploading…");
       const url = await upload(file.files[0], folder);
-      if (url) { hid.value = url; img.src = url; img.hidden = false; clr.hidden = false; toast("Image uploaded"); }
+      if (url) { hid.value = url; if (doc) img.href = url; else img.src = url; img.hidden = false; clr.hidden = false; toast(doc ? "File uploaded. Click Save to publish it" : "Image uploaded"); }
       file.value = "";
     });
     clr.addEventListener("click", () => { hid.value = ""; img.hidden = true; clr.hidden = true; });
@@ -264,13 +270,16 @@ const PROFILE_FIELDS = [
   { name: "name", label: "Your name" },
   { name: "headline", label: "Headline", hint: "small text above your name" },
   { name: "pitch", label: "One-line pitch", type: "textarea" },
-  { name: "photo_url", label: "Your photo", type: "image" },
+  { name: "photo_url", label: "Your photo", hint: "leave empty to use the default photo", type: "image" },
+  { name: "highlights", label: "Highlights under your name", hint: "one per line, keep them short", type: "textarea", lines: true },
+  { name: "cv_url", label: "Your CV (PDF)", hint: "adds a “Download CV” button on the website", type: "file", accept: ".pdf,application/pdf" },
   { name: "about_title", label: "About — title" },
   { name: "about", label: "About — text", hint: "empty line between paragraphs", type: "textarea", big: true },
   { name: "facts", label: "Key numbers", hint: "one per line: number | label", type: "textarea", pairs: true },
   { name: "expertise", label: "Expertise", hint: "one per line", type: "textarea", lines: true },
   { name: "tools", label: "Tools", hint: "one per line", type: "textarea", lines: true },
-  { name: "languages", label: "Languages", hint: "one per line: language | level", type: "textarea", pairs: true }
+  { name: "languages", label: "Languages", hint: "one per line: language | level", type: "textarea", pairs: true },
+  { name: "services", label: "Services — “What I can do for you”", hint: "one per line: title | short description · leave empty to hide the section", type: "textarea", pairs: true }
 ];
 
 const CONTACT_FIELDS = [
@@ -310,7 +319,7 @@ async function profileForm(box, fields, savedMsg) {
       : fieldHtml(f, show(f))).join("")}
     <div class="form-actions"><button class="btn" type="submit">Save changes</button></div></form>`;
   const form = box.querySelector("#pf");
-  form.querySelectorAll("textarea[name=expertise],textarea[name=tools]").forEach(t => t.style.minHeight = "170px");
+  form.querySelectorAll("textarea[name=expertise],textarea[name=tools],textarea[name=services]").forEach(t => t.style.minHeight = "170px");
   wireImages(form, "profile");
   form.onsubmit = async e => {
     e.preventDefault();

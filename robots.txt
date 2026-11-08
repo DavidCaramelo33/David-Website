@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+
+Sitemap: https://jazzy-pavlova-8656f3.netlify.app/sitemap.xml

@@ -17,6 +17,14 @@ const FALLBACK = {
     contact_title: "Let's market something remarkable",
     contact_text: "I'm open to roles in real estate marketing and development, remote or anywhere in France.",
     availability: "both", open_to_hire: true, freelance: true,
+    highlights: ["Founder · Lusitania Investments", "Real estate marketing", "PT · EN · ES · FR"],
+    services: [
+      ["Property marketing strategy", "Positioning, target buyer and launch plan for a property or development, from the first photo to the signed deal."],
+      ["SEO & content", "Websites, listings and articles that rank on Google and turn searches into qualified enquiries."],
+      ["Email marketing", "Brevo and Mailchimp campaigns that keep buyers and investors warm until they're ready to act."],
+      ["Visual content", "Listing visuals, InDesign brochures and short-form video that make a property stand out."]
+    ],
+    cv_url: "",
     hire_text: "Looking for someone to join your team in real estate marketing or development? Tell me about the role.",
     freelance_text: "Need help marketing a property, a project or your agency? Tell me what you have in mind and your timeline.",
     email: "", phone: "", location: "Angers, France", work_note: "Remote or relocation within France"
@@ -120,9 +128,15 @@ function renderHome(c) {
   const av = siteAvail(p);
   $("#hero-status").textContent = [AVAIL_LABEL[av], p.location, av === "none" ? "" : p.work_note].filter(Boolean).join(" · ");
   $(".status i").className = av === "none" ? "off" : av === "freelance" ? "free" : "";
-  $("#portrait").innerHTML = p.photo_url
-    ? `<img src="${esc(safeUrl(p.photo_url))}" alt="${esc(p.name)}">`
-    : `<div class="monogram">${esc(p.name.split(" ").map(w => w[0]).join(""))}</div>`;
+  $("#portrait").innerHTML = `<img src="${esc(safeUrl(p.photo_url || "images/david.jpg"))}" alt="${esc(p.name)}">`;
+  $("#hero-highlights").innerHTML = (p.highlights || []).map(h => `<li>${esc(h)}</li>`).join("");
+  const cv = $("#btn-cv");
+  cv.hidden = !p.cv_url; if (p.cv_url) cv.href = safeUrl(p.cv_url);
+
+  const services = p.services || [];
+  $("#services").hidden = !services.length;
+  $("#service-list").innerHTML = services.map(([t, d], i) => `
+    <div class="service reveal"><span class="service-num">${String(i + 1).padStart(2, "0")}</span><h3>${esc(t)}</h3><p>${esc(d || "")}</p></div>`).join("");
 
   $("#about-title").textContent = p.about_title;
   $("#about-text").innerHTML = String(p.about || "").split(/\n{2,}/).map(t => `<p>${esc(t)}</p>`).join("") +

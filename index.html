@@ -5,6 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>David Caramelo — Real Estate Marketing</title>
 <meta name="description" content="David Caramelo — marketing professional specialised in real estate: property marketing strategy, SEO, email marketing and content. Based in Angers, France.">
+<link rel="canonical" href="https://jazzy-pavlova-8656f3.netlify.app/">
+<meta name="author" content="David Caramelo">
+<meta property="og:type" content="profile">
+<meta property="og:site_name" content="David Caramelo">
+<meta property="og:title" content="David Caramelo — Real Estate Marketing">
+<meta property="og:description" content="Property marketing strategy, SEO, email marketing and content. Open to roles and freelance projects in France.">
+<meta property="og:url" content="https://jazzy-pavlova-8656f3.netlify.app/">
+<meta property="og:image" content="https://jazzy-pavlova-8656f3.netlify.app/images/share.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://jazzy-pavlova-8656f3.netlify.app/images/share.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231d1c1a'/%3E%3Ctext x='32' y='42' font-family='Georgia,serif' font-size='28' fill='%23f7f4ee' text-anchor='middle'%3EDC%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"David Caramelo","jobTitle":"Real Estate Marketing","url":"https://jazzy-pavlova-8656f3.netlify.app/","image":"https://jazzy-pavlova-8656f3.netlify.app/images/david.jpg","address":{"@type":"PostalAddress","addressLocality":"Angers","addressCountry":"FR"},"knowsLanguage":["pt","en","es","fr"],"knowsAbout":["Real estate marketing","SEO","Email marketing","Content marketing"],"sameAs":["https://www.linkedin.com/in/david-caramelo/","https://lusitaniainvestments.fr/"],"worksFor":{"@type":"Organization","name":"Lusitania Investments","url":"https://lusitaniainvestments.fr/"},"alumniOf":{"@type":"CollegeOrUniversity","name":"NHL Stenden University of Applied Sciences"}}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -17,6 +33,7 @@
     <a href="index.html" class="logo">D<span>.</span>C</a>
     <ul>
       <li><a href="#about">About</a></li>
+      <li><a href="#services">Services</a></li>
       <li><a href="#experience">Experience</a></li>
       <li><a href="#projects">Projects</a></li>
       <li><a href="#skills">Skills</a></li>
@@ -34,10 +51,12 @@
         <div class="eyebrow" id="hero-eyebrow"></div>
         <h1 id="hero-name"></h1>
         <p class="lead" id="hero-pitch"></p>
+        <ul class="highlights" id="hero-highlights"></ul>
         <div class="status"><i></i> <span id="hero-status"></span></div>
         <div class="btns">
           <a href="#contact" class="btn solid">Get in touch</a>
           <a href="#projects" class="btn ghost">View projects</a>
+          <a id="btn-cv" class="btn ghost" target="_blank" rel="noopener" download hidden>Download CV</a>
         </div>
       </div>
       <div class="portrait reveal" id="portrait"></div>
@@ -51,23 +70,30 @@
     </div>
   </section>
 
-  <section id="experience">
+  <section id="services" hidden>
     <div class="wrap">
-      <div class="sec-head reveal"><div class="sec-num">02 — Experience</div><h2>Professional path</h2></div>
+      <div class="sec-head reveal"><div class="sec-num">02 — Services</div><h2>What I can do for you</h2></div>
+      <div class="services" id="service-list"></div>
+    </div>
+  </section>
+
+  <section id="experience" class="alt">
+    <div class="wrap">
+      <div class="sec-head reveal"><div class="sec-num">03 — Experience</div><h2>Professional path</h2></div>
       <div class="timeline" id="timeline"></div>
     </div>
   </section>
 
-  <section id="projects" class="alt">
+  <section id="projects">
     <div class="wrap">
-      <div class="sec-head reveal"><div class="sec-num">03 — Projects</div><h2>Selected work</h2></div>
+      <div class="sec-head reveal"><div class="sec-num">04 — Projects</div><h2>Selected work</h2></div>
       <div class="projects" id="project-list"></div>
     </div>
   </section>
 
-  <section id="skills">
+  <section id="skills" class="alt">
     <div class="wrap">
-      <div class="sec-head reveal"><div class="sec-num">04 — Skills</div><h2>What I bring</h2></div>
+      <div class="sec-head reveal"><div class="sec-num">05 — Skills</div><h2>What I bring</h2></div>
       <div class="skills-grid">
         <div class="reveal"><h3>Expertise</h3><div id="skills-expertise"></div></div>
         <div class="reveal"><h3>Tools</h3><div id="skills-tools"></div></div>
@@ -76,16 +102,16 @@
     </div>
   </section>
 
-  <section id="education" class="alt">
+  <section id="education">
     <div class="wrap">
-      <div class="sec-head reveal"><div class="sec-num">05 — Education</div><h2>Education &amp; certifications</h2></div>
+      <div class="sec-head reveal"><div class="sec-num">06 — Education</div><h2>Education &amp; certifications</h2></div>
       <div class="edu"><div class="reveal" id="edu-left"></div><div class="reveal" id="edu-right"></div></div>
     </div>
   </section>
 
   <section id="home-blog" class="home-blog" hidden>
     <div class="wrap">
-      <div class="sec-head reveal"><div class="sec-num">06 — Journal</div><h2>Latest articles</h2></div>
+      <div class="sec-head reveal"><div class="sec-num">07 — Journal</div><h2>Latest articles</h2></div>
       <div class="posts" id="home-posts"></div>
       <div class="see-all"><a href="blog.html" class="btn ghost">All articles</a></div>
     </div>

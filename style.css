@@ -1,3 +1,4 @@
+[hidden]{display:none!important}
 :root{
   --bg:#f7f4ee;
   --bg-alt:#efeae0;
@@ -204,3 +205,20 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 @media (max-width:680px){.reason{grid-template-columns:1fr}}
 .status i.free{background:#4f7fa8;box-shadow:0 0 0 4px rgba(79,127,168,.18)}
 .status i.off{background:#9a958c;box-shadow:0 0 0 4px rgba(154,149,140,.18)}
+
+/* ---------- Hero photo & highlights ---------- */
+.portrait{background:#fff}
+.portrait img{object-position:50% 12%}
+.highlights{list-style:none;display:flex;flex-wrap:wrap;gap:10px;margin:-14px 0 30px}
+.highlights li{font-size:.8rem;letter-spacing:.04em;color:var(--ink);border:1px solid var(--line);background:var(--card);padding:7px 14px}
+.highlights:empty{display:none}
+
+/* ---------- Services ---------- */
+.services{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+.service{padding:36px 28px 8px 0;border-right:1px solid var(--line);margin-right:28px}
+.service:last-child{border-right:0;margin-right:0}
+.service-num{font-family:var(--serif);font-size:1rem;color:var(--accent);letter-spacing:.1em}
+.service h3{margin:14px 0 12px;font-size:1.45rem}
+.service p{color:var(--muted);font-size:.95rem}
+@media (max-width:960px){.services{grid-template-columns:1fr 1fr}.service:nth-child(2n){border-right:0;margin-right:0}}
+@media (max-width:680px){.services{grid-template-columns:1fr}.service{border-right:0;margin-right:0;padding:28px 0 4px;border-bottom:1px solid var(--line)}.service:last-child{border-bottom:0}}
