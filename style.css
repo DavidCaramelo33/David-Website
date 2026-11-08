@@ -371,3 +371,25 @@ a.tool:hover .arrow{opacity:1}
 .fb-sep{width:12px}
 .flipbook:fullscreen .fb-count{color:#b5afa4}
 @media (max-width:680px){.flipbook{padding:20px 8px 0;margin-left:-8px;margin-right:-8px}.fb-sep{display:none}}
+
+/* ---------- Book a call ---------- */
+.book-dialog{width:min(640px,calc(100vw - 24px))}
+.book-body{padding:36px 36px 30px}
+.book-body > p{margin-bottom:20px}
+.book-form{display:grid;gap:18px}
+.book-label{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.book-label small{letter-spacing:0;text-transform:none;font-size:.8rem}
+.book-chips{display:flex;flex-wrap:wrap;gap:8px}
+.book-chips button{background:var(--card);border:1px solid var(--line);padding:8px 13px;font:inherit;font-size:.85rem;color:var(--ink);cursor:pointer;transition:border-color .15s,background .15s}
+.book-chips button:hover{border-color:var(--accent)}
+.book-chips button.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.book-chips button.day{display:flex;flex-direction:column;align-items:center;min-width:58px;padding:7px 8px;line-height:1.2}
+.book-chips button.day b{font-family:var(--serif);font-size:1.35rem;font-weight:500}
+.book-chips button.day small{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;opacity:.75}
+.book-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.book-form input,.book-form textarea{width:100%;border:1px solid var(--line);background:#fff;padding:12px 14px;font:inherit;font-size:.92rem;color:var(--ink)}
+.book-form input:focus,.book-form textarea:focus{outline:none;border-color:var(--accent)}
+.book-form textarea{min-height:80px;resize:vertical}
+.book-form .btn{justify-self:start;cursor:pointer;font:inherit;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase}
+.book-msg{font-size:.9rem;color:var(--accent-dark);min-height:1.2em}
+@media (max-width:560px){.book-body{padding:28px 18px 22px}.book-row{grid-template-columns:1fr}}

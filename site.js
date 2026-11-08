@@ -29,7 +29,7 @@ const FALLBACK = {
     freelance_text: "Need help marketing a property, a project or your agency? Tell me what you have in mind and your timeline.",
     email: "", business_email: "", phone: "", location: "Angers, France", work_note: "Remote or relocation within France",
     results: [["200+", "Properties marketed for Lusitania Investments"], ["900+", "Website views for Lusitania Investments"], ["50K+", "Views across social media"], ["2", "Countries connected: France & Portugal"]],
-    booking_url: "",
+    booking_url: "", booking_enabled: true,
     personal_title: "Beyond work", personal_text: ""
   },
   experience: [
@@ -262,7 +262,12 @@ function renderHome(c) {
   $("#hero-highlights").innerHTML = (p.highlights || []).map(h => `<li>${esc(tr(h))}</li>`).join("");
   const cv = $("#btn-cv");
   cv.hidden = !p.cv_url; if (p.cv_url) cv.href = safeUrl(p.cv_url);
-  ["#btn-book", "#btn-book-2"].forEach(s => { const b = $(s); b.hidden = !p.booking_url; if (p.booking_url) b.href = safeUrl(p.booking_url); });
+  const bookOn = !!p.booking_url || p.booking_enabled !== false;
+  ["#btn-book", "#btn-book-2"].forEach(s => {
+    const b = $(s); b.hidden = !bookOn;
+    if (p.booking_url) { b.href = safeUrl(p.booking_url); b.target = "_blank"; b.onclick = null; }
+    else { b.href = "#book"; b.removeAttribute("target"); b.onclick = e => { e.preventDefault(); openBooking(p, av); }; }
+  });
 
   // logo strip: every company / school logo from Experience and Education
   const seen = new Set();
@@ -447,7 +452,7 @@ function trackVisit() {
 function notifyByEmail(m) {
   const to = (window.SITE_CONFIG || {}).NOTIFY_EMAIL;
   if (!to) return;
-  const label = { job: "job offer", freelance: "freelance request" }[m.kind] || "message";
+  const label = m.call ? "call request" : ({ job: "job offer", freelance: "freelance request" }[m.kind] || "message");
   fetch(`https://formsubmit.co/ajax/${encodeURIComponent(to)}`, {
     method: "POST",
     referrerPolicy: "origin", // FormSubmit activation is per page address: always send the homepage address
@@ -460,6 +465,56 @@ function notifyByEmail(m) {
       "Open your inbox": location.origin + "/admin.html"
     })
   }).catch(() => {});
+}
+
+/* ---------- Book a call (built in: no outside account needed) ---------- */
+const BOOK = { topic: null, day: null, time: null };
+function openBooking(p, av) {
+  const dlg = $("#book-dialog"); if (!dlg) return;
+  applyStaticTexts(dlg);
+  const topics = [...({ both: ["job", "freelance"], job: ["job"], freelance: ["freelance"], none: [] }[av] || []), "general"];
+  if (!topics.includes(BOOK.topic)) BOOK.topic = topics[0];
+  $("#book-topic-step").hidden = topics.length < 2;
+  const label = { job: "topic_job", freelance: "topic_free", general: "topic_other" };
+  $("#book-topics").innerHTML = topics.map(t => `<button type="button" data-topic="${t}" class="${BOOK.topic === t ? "on" : ""}">${ui(label[t])}</button>`).join("");
+
+  // next 10 working days, starting tomorrow
+  const days = []; const d = new Date(); d.setHours(12, 0, 0, 0);
+  while (days.length < 10) { d.setDate(d.getDate() + 1); if (d.getDay() % 6) days.push(new Date(d)); }
+  const iso = x => x.toISOString().slice(0, 10);
+  if (!days.some(x => iso(x) === BOOK.day)) BOOK.day = null;
+  const loc = LANG === "fr" ? "fr-FR" : "en-GB";
+  $("#book-days").innerHTML = days.map(x => `<button type="button" data-day="${iso(x)}" class="day ${BOOK.day === iso(x) ? "on" : ""}"><small>${x.toLocaleDateString(loc, { weekday: "short" })}</small><b>${x.getDate()}</b><small>${x.toLocaleDateString(loc, { month: "short" })}</small></button>`).join("");
+  const times = []; for (let h = 9; h <= 17; h++) for (const m of [0, 30]) if (!(h === 9 && m === 0)) times.push(`${String(h).padStart(2, "0")}:${m ? "30" : "00"}`);
+  $("#book-times").innerHTML = times.map(t => `<button type="button" data-time="${t}" class="${BOOK.time === t ? "on" : ""}">${t}</button>`).join("");
+
+  const form = $("#book-form"), msg = $("#book-msg");
+  msg.textContent = "";
+  form.onclick = e => {
+    const b = e.target.closest("button[data-topic],button[data-day],button[data-time]"); if (!b) return;
+    if (b.dataset.topic) BOOK.topic = b.dataset.topic;
+    if (b.dataset.day) BOOK.day = b.dataset.day;
+    if (b.dataset.time) BOOK.time = b.dataset.time;
+    b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+  };
+  form.onsubmit = async e => {
+    e.preventDefault();
+    if (!BOOK.day || !BOOK.time) { msg.textContent = ui("book_pick"); return; }
+    const db = getDb(); if (!db) { msg.textContent = ui("form_offline"); return; }
+    const data = Object.fromEntries(new FormData(form));
+    const when = new Date(BOOK.day + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    const text = `📅 Call request: ${when} at ${BOOK.time} (Paris time)` + (data.note.trim() ? `\n\n${data.note.trim()}` : "");
+    const kind = ["job", "freelance"].includes(BOOK.topic) ? BOOK.topic : "general";
+    msg.textContent = ui("form_sending");
+    const r = await db.from("messages").insert({ name: data.name.trim(), email: data.email.trim(), message: text, kind });
+    if (r.error) { msg.textContent = ui("form_err"); return; }
+    notifyByEmail({ name: data.name.trim(), email: data.email.trim(), message: text, kind, call: true });
+    form.reset(); BOOK.day = BOOK.time = null;
+    form.querySelectorAll("[data-day].on,[data-time].on").forEach(x => x.classList.remove("on"));
+    msg.textContent = ui("book_ok");
+  };
+  if (!dlg.dataset.wired) { dlg.dataset.wired = 1; dlg.addEventListener("click", e => { if (e.target === dlg || e.target.closest(".dlg-close")) dlg.close(); }); }
+  if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
 }
 
 function setupContactForm() {

@@ -333,7 +333,8 @@ const CONTACT_FIELDS = [
   { name: "location", label: "Location", hint: "e.g. Angers, France" },
   { name: "work_note", label: "Work preference", hint: "shown next to your status, e.g. Remote or relocation within France" },
   { name: "linkedin", label: "LinkedIn link", type: "url" },
-  { name: "booking_url", label: "Book a call link", hint: "e.g. your Calendly or Google Calendar booking page · adds a “Book a call” button", type: "url" },
+  { name: "booking_enabled", label: "Show the “Book a call” button (visitors pick a day and time, the request arrives in your inbox)", type: "bool" },
+  { name: "booking_url", label: "Book a call link", hint: "optional · only if you prefer Calendly or Google Calendar instead of the built-in booking", type: "url" },
   { name: "website", label: "Other website link", type: "url" },
   { section: "Texts in the contact section" },
   { name: "contact_title", label: "Title" },
@@ -370,6 +371,7 @@ async function profileForm(box, fields, savedMsg) {
     e.preventDefault();
     const out = {};
     fields.filter(f => f.name).forEach(f => {
+      if (f.type === "bool") { out[f.name] = form.elements[f.name].checked; return; }
       const v = form.elements[f.name].value;
       const lines = v.split("\n").map(s => s.trim()).filter(Boolean);
       out[f.name] = f.pairs ? lines.map(l => l.split("|").map(s => s.trim()).slice(0, 2)) : f.lines ? lines : v.trim();
@@ -397,7 +399,7 @@ const KIND = {
   freelance: { label: "Freelance", cls: "free", bell: "New freelance request from" },
   general: { label: "General", cls: "", bell: "New message from" }
 };
-const kindOf = m => KIND[m.kind] || KIND.general;
+const kindOf = m => String(m.message || "").startsWith("📅") ? { label: "Call request", cls: "call", bell: "New call request from" } : (KIND[m.kind] || KIND.general);
 let msgFilter = "all";
 
 async function showContactCentral() {

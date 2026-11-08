@@ -127,6 +127,27 @@
     <div class="dlg-body"></div>
   </dialog>
 
+  <dialog class="project-dialog book-dialog" id="book-dialog" aria-label="Book a call">
+    <button class="dlg-close" aria-label="Close">×</button>
+    <div class="dlg-text book-body">
+      <div class="tag" data-i18n="btn_book">Book a call</div>
+      <h3 data-i18n="book_title">Let's talk for 20 minutes</h3>
+      <p data-i18n="book_sub">Pick a day and a time that suit you. I'll confirm by email.</p>
+      <form id="book-form" class="book-form">
+        <div class="book-step" id="book-topic-step"><div class="book-label" data-i18n="book_topic">What is it about?</div><div class="book-chips" id="book-topics"></div></div>
+        <div class="book-step"><div class="book-label" data-i18n="book_day">Day</div><div class="book-chips" id="book-days"></div></div>
+        <div class="book-step"><div class="book-label"><span data-i18n="book_time">Time</span> <small data-i18n="book_tz">(Paris time)</small></div><div class="book-chips" id="book-times"></div></div>
+        <div class="book-row">
+          <input name="name" placeholder="Your name" data-i18n-ph="ph_name" required maxlength="200">
+          <input name="email" type="email" placeholder="Your email" data-i18n-ph="ph_email" required maxlength="200">
+        </div>
+        <textarea name="note" placeholder="Anything I should know before the call? (optional)" data-i18n-ph="book_note" maxlength="2000"></textarea>
+        <button class="btn solid" type="submit" data-i18n="book_send">Request this call</button>
+        <div class="book-msg" id="book-msg"></div>
+      </form>
+    </div>
+  </dialog>
+
   <section id="skills" class="numbered" data-label="sec_skills">
     <div class="wrap">
       <div class="sec-head reveal"><div class="sec-num"></div><h2 data-i18n="h_skills">What I bring</h2></div>
