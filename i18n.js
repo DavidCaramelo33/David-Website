@@ -217,6 +217,37 @@ const FR_CONTENT = {
   "Portugal": "Portugal", "Netherlands": "Pays-Bas",
   "I've lived and worked in three countries and explored Europe, South America and more. Every trip teaches me something about people and places.":
     "J'ai vécu et travaillé dans trois pays et exploré l'Europe, l'Amérique du Sud et bien plus. Chaque voyage m'apprend quelque chose sur les gens et les lieux.",
+  // From LinkedIn (Nov 2026)
+  "Co-Founder": "Co-fondateur",
+  "Co-founded Lusitania Investments, a venture connecting international buyers with real estate opportunities in Portugal. From France, I identify investors and people looking to relocate, guide them through the purchase process and lead marketing and business development: market research, lead generation, cross-border communication and investment positioning.":
+    "Co-fondateur de Lusitania Investments, une société qui met en relation des acheteurs internationaux avec des opportunités immobilières au Portugal. Depuis la France, j'identifie des investisseurs et des personnes souhaitant s'installer, je les accompagne tout au long de l'achat et je pilote le marketing et le développement commercial : études de marché, génération de leads, communication internationale et positionnement des investissements.",
+  "Marketing Operations Intern": "Stagiaire marketing opérationnel",
+  "Feb — Jun 2026": "Févr. — juin 2026",
+  "Translated and adapted marketing content across six languages (Portuguese, Spanish, German, English, French and Polish), edited video content, designed layouts in Adobe InDesign and supported campaign execution and email marketing workflows in Brevo.":
+    "Traduction et adaptation de contenus marketing en six langues (portugais, espagnol, allemand, anglais, français et polonais), montage vidéo, mise en page sur Adobe InDesign et soutien à l'exécution des campagnes et des workflows d'e-mail marketing sur Brevo.",
+  "Marketing Manager": "Responsable marketing",
+  "Emmen, Netherlands": "Emmen, Pays-Bas",
+  "Promoted events, campaigns and student initiatives with video content (CapCut, DaVinci Resolve), Mailchimp email marketing, paid advertising and SEO, driving engagement and strong attendance at many events.":
+    "Promotion d'événements, de campagnes et d'initiatives étudiantes grâce à la vidéo (CapCut, DaVinci Resolve), l'e-mail marketing sur Mailchimp, la publicité payante et le SEO, avec un fort engagement et une belle participation à de nombreux événements.",
+  "Digital Marketing Strategist & Content Creator": "Stratège en marketing digital et créateur de contenu",
+  "Tailored digital marketing strategies and content for clients in real estate, fitness, fashion and more: brand launches, social media management, SEO to grow organic traffic and creative campaigns built on authentic storytelling, with performance tracked and improved over time.":
+    "Stratégies de marketing digital et contenus sur mesure pour des clients dans l'immobilier, le fitness, la mode et plus encore : lancements de marque, gestion des réseaux sociaux, SEO pour développer le trafic naturel et campagnes créatives fondées sur un storytelling authentique, avec un suivi continu des performances.",
+  "Freelance": "Freelance",
+  "Salesperson": "Vendeur",
+  "Lisbon, Portugal": "Lisbonne, Portugal",
+  "Internship Trainee": "Stagiaire",
+  "Retail internship at one of Portugal's leading culture and electronics retailers: customer service, sales support and in-store operations.":
+    "Stage dans l'une des principales enseignes de culture et d'électronique du Portugal : service client, soutien à la vente et opérations en magasin.",
+  "BASc International Business": "Bachelor en commerce international (BASc)",
+  "Minor in Cross-Cultural Business Skills": "Mineure en compétences commerciales interculturelles",
+  "University of Amsterdam.": "Université d'Amsterdam.",
+  "Marketing Management": "Management du marketing",
+  "NHL Stenden University of Applied Sciences, Emmen (NL).": "NHL Stenden University of Applied Sciences, Emmen (Pays-Bas).",
+  "Promotional Film Award, City of Emmen": "Prix du film promotionnel, ville d'Emmen",
+  "Winning entry in the City of Emmen promotional film competition.": "Film lauréat du concours de film promotionnel de la ville d'Emmen.",
+  "Beginner SEO with Semrush": "SEO débutant avec Semrush",
+  "Video · Award winner · 2022": "Vidéo · Primé · 2022",
+  "Full professional": "Professionnel complet", "Professional": "Professionnel", "Elementary": "Élémentaire", "Dutch": "Néerlandais",
   // Same in both languages (names, places, levels)
   "PT · EN · ES · FR": "PT · EN · ES · FR", "SEO": "SEO", "C2": "C2", "B1": "B1",
   "Angers, France": "Angers, France", "Nantes, France": "Nantes, France", "Oeiras, Portugal": "Oeiras, Portugal",
