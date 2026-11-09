@@ -246,6 +246,7 @@ const FR_CONTENT = {
   "Promotional Film Award, City of Emmen": "Prix du film promotionnel, ville d'Emmen",
   "Winning entry in the City of Emmen promotional film competition.": "Film lauréat du concours de film promotionnel de la ville d'Emmen.",
   "Beginner SEO with Semrush": "SEO débutant avec Semrush",
+  "Basic Education": "Enseignement de base", "Salesianos Portugal.": "Salesianos Portugal.",
   "Video · Award winner · 2022": "Vidéo · Primé · 2022",
   "Full professional": "Professionnel complet", "Professional": "Professionnel", "Elementary": "Élémentaire", "Dutch": "Néerlandais",
   // Same in both languages (names, places, levels)
