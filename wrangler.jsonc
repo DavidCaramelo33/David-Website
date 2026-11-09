@@ -1,0 +1,8 @@
+// Cloudflare settings: build the website into "dist" and publish only that folder.
+// Setup notes, database scripts and helpers stay private.
+{
+  "name": "david-website",
+  "compatibility_date": "2026-11-01",
+  "build": { "command": "sh build.sh" },
+  "assets": { "directory": "./dist" }
+}
