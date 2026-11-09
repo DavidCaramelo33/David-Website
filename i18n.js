@@ -15,6 +15,12 @@ const UI = {
 
   sec_about: { en: "About", fr: "À propos" },
   sec_services: { en: "Services", fr: "Services" },
+  svc_more: { en: "See what I do", fr: "Voir le détail" },
+  svc_do: { en: "What I do", fr: "Ce que je fais" },
+  svc_get: { en: "What you get", fr: "Ce que vous obtenez" },
+  svc_proof: { en: "Where I have done it", fr: "Où je l’ai déjà fait" },
+  svc_tools: { en: "Tools", fr: "Outils" },
+  svc_cta: { en: "Let’s talk about it", fr: "Parlons-en" },
   sec_experience: { en: "Experience", fr: "Parcours" },
   sec_results: { en: "Results", fr: "Résultats" },
   sec_projects: { en: "Projects", fr: "Projets" },

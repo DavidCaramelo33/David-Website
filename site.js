@@ -282,7 +282,7 @@ function renderHome(c) {
   const services = p.services || [];
   $("#services").hidden = !services.length;
   $("#service-list").innerHTML = services.map(([t, d], i) => `
-    <div class="service reveal"><div class="service-top"><span class="service-icon">${serviceIcon(t)}</span><span class="service-num">${String(i + 1).padStart(2, "0")}</span></div><h3>${esc(tr(t))}</h3><p>${esc(tr(d || ""))}</p></div>`).join("");
+    <div class="service reveal" data-i="${i}" role="button" tabindex="0"><div class="service-top"><span class="service-icon">${serviceIcon(t)}</span><span class="service-num">${String(i + 1).padStart(2, "0")}</span></div><h3>${esc(tr(t))}</h3><p>${esc(tr(d || ""))}</p><span class="service-more">${esc(ui("svc_more"))} <i>→</i></span></div>`).join("");
 
   $("#about-photo").innerHTML = `<img src="${esc(safeUrl(p.about_image || "images/about.jpg"))}" alt="${esc(p.name)}">`;
   $("#about-title").textContent = tr(p.about_title);
@@ -547,6 +547,208 @@ function observeReveal() {
   els.forEach(el => io.observe(el));
 }
 
+/* ---------- 3D draggable language switch ---------- */
+function changeLang(l) {
+  if (l === LANG) return;
+  setLang(l);
+  const page = document.body.dataset.page;
+  if (page === "home" && LAST_CONTENT) renderHome(LAST_CONTENT);
+  else if (page === "blog") renderBlogList();
+  else if (page === "post") renderPost();
+  else applyStaticTexts();
+}
+function setupLangSwitch(sw) {
+  const knob = document.createElement("span"); knob.className = "lang-knob"; sw.prepend(knob);
+  const btns = [...sw.querySelectorAll("[data-lang]")];
+  const place = p => sw.style.setProperty("--p", p);
+  const sync = () => place(LANG === "fr" ? 1 : 0);
+  sync();
+  let start = null, moved = false, lastX = 0, suppress = false;
+  const commit = l => {
+    const changed = l !== LANG;
+    place(l === "fr" ? 1 : 0); sw.style.setProperty("--tilt", "0deg");
+    btns.forEach(b => b.classList.toggle("on", b.dataset.lang === l));
+    if (changed) {
+      sw.classList.remove("flip"); void sw.offsetWidth; sw.classList.add("flip");
+      try { navigator.vibrate?.(8); } catch {}
+      setTimeout(() => { changeLang(l); sync(); }, 160);
+    }
+  };
+  sw.addEventListener("pointerdown", e => {
+    start = { x: e.clientX, p: LANG === "fr" ? 1 : 0, w: knob.offsetWidth };
+    moved = false; lastX = e.clientX;
+    sw.classList.add("pressed"); sw.setPointerCapture(e.pointerId);
+  });
+  sw.addEventListener("pointermove", e => {
+    if (!start) return;
+    const dx = e.clientX - start.x;
+    if (!moved && Math.abs(dx) < 4) return;
+    moved = true; sw.classList.add("dragging");
+    const p = Math.max(0, Math.min(1, start.p + dx / start.w));
+    place(p);
+    const v = Math.max(-25, Math.min(25, (e.clientX - lastX) * 4)); lastX = e.clientX;
+    sw.style.setProperty("--tilt", `${v}deg`);
+    btns.forEach(b => b.classList.toggle("on", (b.dataset.lang === "fr") === (p > .5)));
+  });
+  const end = e => {
+    if (!start) return;
+    sw.classList.remove("pressed", "dragging");
+    const cur = parseFloat(sw.style.getPropertyValue("--p")) || 0;
+    if (moved) commit(cur > .5 ? "fr" : "en");
+    else {
+      const hit = e.type === "pointerup" && document.elementFromPoint(e.clientX, e.clientY)?.closest("[data-lang]");
+      commit(hit && hit.dataset.lang !== LANG ? hit.dataset.lang : (LANG === "fr" ? "en" : "fr"));
+    }
+    start = null; suppress = true; setTimeout(() => suppress = false, 50);
+  };
+  sw.addEventListener("pointerup", end); sw.addEventListener("pointercancel", end);
+  btns.forEach(b => b.addEventListener("click", () => { if (!suppress) commit(b.dataset.lang); }));
+}
+
+/* ---------- service folders: click a service card, a folder opens with the details ---------- */
+const SERVICE_DETAILS = [
+  { match: /visual|video|photo|design|brochure/i,
+    intro: { en: "People decide in seconds. Strong visuals make them stop scrolling and look at the property.", fr: "On décide en quelques secondes. Des visuels forts font qu'on s'arrête et qu'on regarde le bien." },
+    do: [
+      { en: "Selecting and editing listing photos", fr: "Sélection et retouche des photos d'annonce" },
+      { en: "Brochures and flyers designed in InDesign", fr: "Brochures et flyers conçus sous InDesign" },
+      { en: "Short-form video for Reels, TikTok and Shorts", fr: "Vidéos courtes pour Reels, TikTok et Shorts" },
+      { en: "Social media posts and reusable templates", fr: "Publications et modèles réutilisables pour les réseaux sociaux" },
+      { en: "A consistent look across every channel", fr: "Une identité cohérente sur tous les canaux" }
+    ],
+    get: [{ en: "Photo selection", fr: "Sélection photo" }, { en: "Brochure", fr: "Brochure" }, { en: "Short videos", fr: "Vidéos courtes" }, { en: "Social templates", fr: "Modèles réseaux sociaux" }],
+    proof: { en: "50k+ views across social media for Lusitania Investments, and the promotional film for the City of Emmen.", fr: "Plus de 50 000 vues sur les réseaux sociaux pour Lusitania Investments, et le film promotionnel de la ville d'Emmen." },
+    tools: ["Adobe InDesign", "CapCut"] },
+  { match: /e-?mail|newsletter/i,
+    intro: { en: "Most buyers aren't ready on day one. Good emails keep them close until they are.", fr: "La plupart des acheteurs ne sont pas prêts le premier jour. De bons e-mails les gardent proches jusqu'à ce qu'ils le soient." },
+    do: [
+      { en: "Newsletters and campaigns, written and designed", fr: "Newsletters et campagnes, rédigées et mises en page" },
+      { en: "Automated sequences: welcome, follow-up, re-engagement", fr: "Séquences automatiques : bienvenue, relance, réactivation" },
+      { en: "Separate lists for buyers, investors and sellers", fr: "Listes séparées pour acheteurs, investisseurs et vendeurs" },
+      { en: "Campaigns in Portuguese, English, Spanish and French", fr: "Campagnes en portugais, anglais, espagnol et français" },
+      { en: "Open and click reports, with A/B tests", fr: "Suivi des ouvertures et des clics, avec tests A/B" }
+    ],
+    get: [{ en: "Campaign calendar", fr: "Calendrier de campagnes" }, { en: "Email templates", fr: "Modèles d'e-mails" }, { en: "Automations", fr: "Automatisations" }, { en: "Monthly report", fr: "Rapport mensuel" }],
+    proof: { en: "At Weenat I adapted and ran email workflows in Brevo in six languages.", fr: "Chez Weenat, j'ai adapté et piloté des workflows e-mail sous Brevo en six langues." },
+    tools: ["Brevo", "Mailchimp"] },
+  { match: /seo|content|contenu|search/i,
+    intro: { en: "Buyers start on Google. I make sure they find you, and that what they find makes them get in touch.", fr: "Les acheteurs commencent sur Google. Je fais en sorte qu'ils vous trouvent, et que ce qu'ils trouvent leur donne envie de vous contacter." },
+    do: [
+      { en: "Keyword research for property searches in your area", fr: "Recherche de mots-clés pour les recherches immobilières de votre secteur" },
+      { en: "On-page SEO for websites and listings: titles, descriptions, structure", fr: "SEO on-page des sites et annonces : titres, descriptions, structure" },
+      { en: "Blog articles and buyer guides that answer real questions", fr: "Articles de blog et guides d'achat qui répondent aux vraies questions" },
+      { en: "Local SEO and Google Business Profile", fr: "SEO local et fiche Google Business Profile" },
+      { en: "Monthly ranking and traffic reports", fr: "Rapports mensuels de positionnement et de trafic" }
+    ],
+    get: [{ en: "Keyword plan", fr: "Plan de mots-clés" }, { en: "Optimised pages", fr: "Pages optimisées" }, { en: "Content calendar", fr: "Calendrier éditorial" }, { en: "Articles", fr: "Articles" }],
+    proof: { en: "I built the Lusitania Investments website and blog: 900+ website views so far. Certified in SEO with Semrush.", fr: "J'ai créé le site et le blog de Lusitania Investments : plus de 900 vues à ce jour. Certifié en SEO avec Semrush." },
+    tools: ["Semrush", "Google Analytics"] },
+  { match: /strateg|positioning|launch|property/i,
+    intro: { en: "Every property has its buyer. My job is to find them and give them a reason to act.", fr: "Chaque bien a son acheteur. Mon travail : le trouver et lui donner une raison d'agir." },
+    do: [
+      { en: "Market and competitor research: prices, demand, who is buying", fr: "Étude du marché et de la concurrence : prix, demande, profil des acheteurs" },
+      { en: "Buyer profiles and positioning: why this property, for whom", fr: "Profils d'acheteurs et positionnement : pourquoi ce bien, pour qui" },
+      { en: "Launch plan: channels, budget, timeline and messages", fr: "Plan de lancement : canaux, budget, calendrier et messages" },
+      { en: "Listing texts and presentation in four languages", fr: "Textes d'annonce et présentation en quatre langues" },
+      { en: "Lead tracking and reports, so you know what works", fr: "Suivi des contacts et rapports, pour savoir ce qui fonctionne" }
+    ],
+    get: [{ en: "Marketing plan", fr: "Plan marketing" }, { en: "Buyer profiles", fr: "Profils acheteurs" }, { en: "Channel & budget plan", fr: "Plan canaux et budget" }, { en: "Monthly report", fr: "Rapport mensuel" }],
+    proof: { en: "I co-founded and run the marketing of Lusitania Investments, connecting international buyers with property in Portugal.", fr: "J'ai cofondé Lusitania Investments, dont je pilote le marketing, pour relier des acheteurs internationaux à l'immobilier au Portugal." },
+    tools: ["Google Analytics", "Google Ads", "Semrush"] }
+];
+// built-in French for the default folder texts, so edited-or-not texts translate through tr()
+SERVICE_DETAILS.forEach(d => [d.intro, d.proof, ...d.do, ...d.get].forEach(x => { if (!(x.en in FR_CONTENT)) FR_CONTENT[x.en] = x.fr; }));
+/* folder content for a service: what the admin saved, else the built-in default (English; French via tr) */
+function serviceDetail(p, title) {
+  const s = (p && p.service_details || {})[title];
+  if (s && (s.intro || (s.do || []).length || s.proof)) return s;
+  const d = SERVICE_DETAILS.find(x => x.match.test(title));
+  return d ? { intro: d.intro.en, do: d.do.map(x => x.en), get: d.get.map(x => x.en), proof: d.proof.en, tools: d.tools } : null;
+}
+
+function setupFolders() {
+  const ov = document.createElement("div");
+  ov.className = "folder-ov"; ov.hidden = true;
+  ov.innerHTML = `<div class="folder" role="dialog" aria-modal="true">
+    <div class="folder-tab"><small></small><b></b></div>
+    <div class="folder-back"></div>
+    <div class="folder-papers"></div>
+    <div class="folder-front"><span></span></div>
+    <button class="folder-x" aria-label="Close">×</button></div>`;
+  document.body.append(ov);
+  const folder = ov.querySelector(".folder"), papers = ov.querySelector(".folder-papers");
+  let isOpen = false, busy = false;
+
+  window.openFolder = ({ num = "", title, html, from }) => {
+    if (busy || isOpen) return;
+    ov.querySelector(".folder-tab small").textContent = num;
+    ov.querySelector(".folder-tab b").textContent = title;
+    ov.querySelector(".folder-front span").textContent = title;
+    papers.innerHTML = html; papers.scrollTop = 0;
+    ov.hidden = false; document.body.classList.add("folder-lock");
+    if (from) {
+      const r = from.getBoundingClientRect();
+      const fx = (innerWidth - folder.offsetWidth) / 2, fy = (innerHeight - folder.offsetHeight) / 2;
+      folder.style.transformOrigin = `${r.left + r.width / 2 - fx}px ${r.top + r.height / 2 - fy}px`;
+    } else folder.style.transformOrigin = "";
+    void ov.offsetWidth;
+    ov.classList.add("open"); isOpen = true;
+    ov.querySelector(".folder-x").focus({ preventScroll: true });
+  };
+  function close(after) {
+    if (!isOpen || busy) return;
+    busy = true;
+    ov.classList.remove("open"); ov.classList.add("closing");
+    setTimeout(() => {
+      ov.classList.remove("closing"); ov.hidden = true; busy = false; isOpen = false;
+      document.body.classList.remove("folder-lock");
+      if (typeof after === "function") after();
+    }, 780);
+  }
+  ov.addEventListener("click", e => {
+    if (e.target === ov || e.target.closest(".folder-x")) return close();
+    const a = e.target.closest('a[href^="#"]');
+    if (a && a.getAttribute("href").length > 1) {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute("href"));
+      close(() => target?.scrollIntoView({ behavior: "smooth" }));
+    }
+  });
+  addEventListener("keydown", e => { if (e.key === "Escape" && isOpen && !document.querySelector("dialog[open]")) close(); });
+
+  // service cards open their folder
+  $("#service-list")?.addEventListener("click", e => {
+    const card = e.target.closest(".service"); if (!card) return;
+    const s = (LAST_CONTENT?.profile?.services || FALLBACK.profile.services)[+card.dataset.i];
+    if (s) openService(card, s[0], s[1], +card.dataset.i);
+  });
+  $("#service-list")?.addEventListener("keydown", e => {
+    if ((e.key === "Enter" || e.key === " ") && e.target.closest(".service")) { e.preventDefault(); e.target.click(); }
+  });
+}
+
+function openService(card, title, desc, i) {
+  const d = serviceDetail(LAST_CONTENT?.profile, title);
+  const num = String(i + 1).padStart(2, "0");
+  const card_ = (h, body) => body ? `<div class="svc-card${h === "svc_proof" ? " svc-proof" : ""}"><h3>${esc(ui(h))}</h3>${body}</div>` : "";
+  const chips = (arr, t = true) => (arr || []).length ? `<div class="svc-chips">${arr.map(x => `<span>${esc(t ? tr(x) : x)}</span>`).join("")}</div>` : "";
+  const html = `<div class="svc-sheet">
+    <div class="svc-head"><span class="service-icon">${serviceIcon(title)}</span><div><span class="sec-num">${num} — ${esc(ui("sec_services"))}</span><h2>${esc(tr(title))}</h2></div></div>
+    <p class="svc-intro">${esc(d && d.intro ? tr(d.intro) : tr(desc))}</p>
+    ${d ? `${d.intro ? `<p class="svc-desc">${esc(tr(desc))}</p>` : ""}
+    <div class="svc-grid">
+      <div>${card_("svc_do", (d.do || []).length ? `<ul class="svc-list">${d.do.map(x => `<li>${esc(tr(x))}</li>`).join("")}</ul>` : "")}</div>
+      <div class="svc-side">
+        ${card_("svc_get", chips(d.get))}
+        ${card_("svc_proof", d.proof ? `<p>${esc(tr(d.proof))}</p>` : "")}
+        ${card_("svc_tools", chips(d.tools, false))}
+      </div>
+    </div>` : ""}
+    <div class="svc-cta"><a class="btn solid" href="#contact">${esc(ui("svc_cta"))}</a></div>
+  </div>`;
+  openFolder({ num, title: tr(title), html, from: card });
+}
+
 function setupChrome() {
   const yr = $("#yr"); if (yr) yr.textContent = new Date().getFullYear();
   const header = document.querySelector("header"), bar = $("#progress"), top = $("#to-top");
@@ -560,15 +762,8 @@ function setupChrome() {
   top?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
   $(".menu-btn")?.addEventListener("click", () => document.body.classList.toggle("menu-open"));
   document.querySelectorAll(".nav ul a").forEach(a => a.addEventListener("click", () => document.body.classList.remove("menu-open")));
-  document.querySelectorAll(".lang-switch [data-lang]").forEach(b => b.addEventListener("click", () => {
-    if (b.dataset.lang === LANG) return;
-    setLang(b.dataset.lang);
-    const page = document.body.dataset.page;
-    if (page === "home" && LAST_CONTENT) renderHome(LAST_CONTENT);
-    else if (page === "blog") renderBlogList();
-    else if (page === "post") renderPost();
-    else applyStaticTexts();
-  }));
+  document.querySelectorAll(".lang-switch").forEach(setupLangSwitch);
+  if (document.body.dataset.page === "home") setupFolders();
   applyStaticTexts();
 }
 

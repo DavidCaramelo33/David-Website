@@ -319,7 +319,6 @@ const PROFILE_FIELDS = [
   { name: "expertise", label: "Expertise", hint: "one per line", type: "textarea", lines: true },
   { name: "tools", label: "Tools", hint: "one per line", type: "textarea", lines: true },
   { name: "languages", label: "Languages", hint: "one per line: language | level", type: "textarea", pairs: true },
-  { name: "services", label: "Services — “What I can do for you”", hint: "one per line: title | short description · leave empty to hide the section", type: "textarea", pairs: true },
   { name: "personal_title", label: "Personal section — title", hint: "e.g. Beyond work" },
   { name: "lived_in", label: "Countries you have lived and worked in", hint: "one per line · shown with flags under your personal intro", type: "textarea", lines: true },
   { name: "personal_text", label: "Personal section — intro", hint: "a few lines about you as a person · empty line between paragraphs", type: "textarea" },
@@ -386,6 +385,61 @@ function showProfile() {
   profileForm(document.getElementById("pbox"), PROFILE_FIELDS, "Profile saved");
 }
 
+
+/* ---------- Services: cards + the folder that opens when a visitor clicks one ---------- */
+async function showServices() {
+  VT.textContent = "Services"; V.onclick = null;
+  VA.innerHTML = `<button class="btn ghost" id="svc-add">+ Add a service</button>`;
+  V.innerHTML = `<p class="muted" style="text-align:center;padding:40px 0">Loading…</p>`;
+  const p = await loadProfile(); if (!p) return;
+  let items = (p.services || []).map(([title, desc]) => {
+    const d = serviceDetail(p, title) || {};
+    return { title, desc: desc || "", intro: d.intro || "", do: (d.do || []).join("\n"), get: (d.get || []).join("\n"), proof: d.proof || "", tools: (d.tools || []).join("\n") };
+  });
+  const read = () => { items = [...V.querySelectorAll(".svc-edit")].map(c => Object.fromEntries([...c.querySelectorAll("[data-k]")].map(el => [el.dataset.k, el.value]))); };
+  const draw = () => {
+    V.innerHTML = `
+      <div class="card tr-intro"><b>Your “What I can do for you” section.</b> Each service is a card on the website. When a visitor clicks it, a folder opens with the details below. Remove every service to hide the section. French versions go in <b>Translations (FR)</b>.</div>
+      <form id="svf" class="form">
+        ${items.map((s, i) => `<div class="card svc-edit">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px">
+            <h2>${String(i + 1).padStart(2, "0")} · ${esc(s.title || "New service")}</h2>
+            <div style="display:flex;gap:6px">
+              <button type="button" class="btn ghost" data-mv="${i}" data-d="-1" ${i ? "" : "disabled"} title="Move up">↑</button>
+              <button type="button" class="btn ghost" data-mv="${i}" data-d="1" ${i < items.length - 1 ? "" : "disabled"} title="Move down">↓</button>
+              <button type="button" class="btn danger" data-rm="${i}">Remove</button>
+            </div>
+          </div>
+          <div class="form-section"><h2 style="font-size:.95rem">On the card</h2></div>
+          <label>Title <input data-k="title" value="${esc(s.title)}" required></label>
+          <label>Short description <small>shown on the card</small><textarea data-k="desc" rows="2">${esc(s.desc)}</textarea></label>
+          <div class="form-section"><h2 style="font-size:.95rem">Inside the folder</h2><p class="muted small">Leave all of these empty to use the built-in text.</p></div>
+          <label>Opening line <small>big sentence at the top</small><textarea data-k="intro" rows="2">${esc(s.intro)}</textarea></label>
+          <div class="row2">
+            <label>What I do <small>one per line</small><textarea data-k="do" rows="6">${esc(s.do)}</textarea></label>
+            <label>What you get <small>one per line</small><textarea data-k="get" rows="6">${esc(s.get)}</textarea></label>
+          </div>
+          <label>Where I have done it <small>proof from your experience</small><textarea data-k="proof" rows="2">${esc(s.proof)}</textarea></label>
+          <label>Tools <small>one per line</small><textarea data-k="tools" rows="3">${esc(s.tools)}</textarea></label>
+        </div>`).join("")}
+        ${items.length ? "" : `<div class="card"><p class="muted">No services: the section is hidden on the website. Click “+ Add a service”.</p></div>`}
+        <div class="form-actions"><button class="btn" type="submit">Save services</button></div>
+      </form>`;
+    V.querySelectorAll("[data-mv]").forEach(b => b.onclick = () => { read(); const i = +b.dataset.mv, j = i + +b.dataset.d; [items[i], items[j]] = [items[j], items[i]]; draw(); });
+    V.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { read(); if (confirm(`Remove “${items[+b.dataset.rm].title || "this service"}”? It disappears from the website when you save.`)) { items.splice(+b.dataset.rm, 1); draw(); } });
+    document.getElementById("svf").onsubmit = async e => {
+      e.preventDefault(); read();
+      const lines = v => String(v || "").split("\n").map(s => s.trim()).filter(Boolean);
+      const list = items.filter(s => s.title.trim());
+      const services = list.map(s => [s.title.trim(), s.desc.trim()]);
+      const service_details = {};
+      list.forEach(s => { service_details[s.title.trim()] = { intro: s.intro.trim(), do: lines(s.do), get: lines(s.get), proof: s.proof.trim(), tools: lines(s.tools) }; });
+      if (await saveProfile({ services, service_details })) { toast("Services saved"); showServices(); }
+    };
+  };
+  document.getElementById("svc-add").onclick = () => { read(); items.push({ title: "", desc: "", intro: "", do: "", get: "", proof: "", tools: "" }); draw(); [...V.querySelectorAll(".svc-edit [data-k=title]")].pop()?.focus(); };
+  draw();
+}
 /* ---------- Contact Central: availability + inbox + details ---------- */
 const AVAIL = [
   { key: "both", title: "Open to work & freelance", text: "Visitors can offer you a job or send a freelance project.", dot: "green" },
@@ -645,7 +699,7 @@ async function showTranslations() {
   String(p.about || "").split(/\n{2,}/).forEach(t => add("Profile & About", t));
   (p.facts || []).forEach(([, l]) => add("Profile & About", l));
   (p.highlights || []).forEach(h => add("Profile & About", h));
-  (p.services || []).forEach(([t, d]) => { add("Services", t); add("Services", d); });
+  (p.services || []).forEach(([t, d]) => { add("Services", t); add("Services", d); const x = serviceDetail(p, t) || {}; add("Services", x.intro); (x.do || []).forEach(s => add("Services", s)); (x.get || []).forEach(s => add("Services", s)); add("Services", x.proof); });
   (p.results || []).forEach(([, l]) => add("Results", l));
   (p.expertise || []).forEach(x => add("Skills", x));
   (p.languages || []).forEach(([l, lv]) => { add("Skills", l); add("Skills", lv); });
@@ -680,7 +734,7 @@ async function showTranslations() {
 }
 
 /* ---------- navigation & auth ---------- */
-const VIEWS = { interests: () => showList("interests"), portfolio: () => showList("portfolio"), translations: showTranslations, dashboard: showDashboard, contact: showContactCentral, messages: showContactCentral, posts: showPosts, profile: showProfile, projects: () => showList("projects"), experience: () => showList("experience"), education: () => showList("education") };
+const VIEWS = { services: showServices, interests: () => showList("interests"), portfolio: () => showList("portfolio"), translations: showTranslations, dashboard: showDashboard, contact: showContactCentral, messages: showContactCentral, posts: showPosts, profile: showProfile, projects: () => showList("projects"), experience: () => showList("experience"), education: () => showList("education") };
 function go(view) {
   document.querySelectorAll("aside [data-view]").forEach(b => b.classList.toggle("on", b.dataset.view === view));
   document.body.classList.remove("nav-open");
