@@ -25,7 +25,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body data-page="home">
@@ -50,14 +50,14 @@
 </header>
 
 <main>
-  <section class="hero">
-    <div class="wrap hero-grid">
-      <div class="reveal">
+  <!-- Bento grid: intro, photo, availability, languages, results, about, logos -->
+  <section class="bento-wrap" id="about">
+    <div class="wrap bento">
+      <div class="tile t-intro reveal">
         <div class="eyebrow" id="hero-eyebrow"></div>
         <h1 id="hero-name"></h1>
         <p class="lead" id="hero-pitch"></p>
         <ul class="highlights" id="hero-highlights"></ul>
-        <div class="status"><i></i> <span id="hero-status"></span></div>
         <div class="btns">
           <a href="#contact" class="btn solid" data-i18n="btn_contact">Get in touch</a>
           <a id="btn-book" class="btn ghost" target="_blank" rel="noopener" data-i18n="btn_book" hidden>Book a call</a>
@@ -65,23 +65,25 @@
           <a id="btn-cv" class="btn ghost" target="_blank" rel="noopener" download data-i18n="btn_cv" hidden>Download CV</a>
         </div>
       </div>
-      <div class="portrait reveal" id="portrait"></div>
-    </div>
-  </section>
-
-  <div class="logo-strip" id="logo-strip" hidden>
-    <div class="wrap">
-      <div class="logo-strip-title" data-i18n="logos_title">Worked &amp; studied with</div>
-      <div class="logo-row" id="logo-row"></div>
-    </div>
-  </div>
-
-  <section id="about" class="alt numbered" data-label="sec_about">
-    <div class="wrap">
-      <div class="sec-head reveal"><div class="sec-num"></div><h2 id="about-title"></h2></div>
-      <div class="about-grid">
-        <figure class="about-photo reveal" id="about-photo"></figure>
-        <div class="about-text reveal" id="about-text"></div>
+      <div class="tile t-photo portrait reveal" id="portrait"></div>
+      <div class="tile t-status reveal">
+        <div class="tile-label" data-i18n="tile_status">Availability</div>
+        <div class="status"><i></i> <span id="hero-status"></span></div>
+      </div>
+      <div class="tile t-langs reveal">
+        <div class="tile-label" data-i18n="h_languages">Languages</div>
+        <div id="skills-languages"></div>
+      </div>
+      <div class="t-results" id="results" hidden><div class="result-row" id="result-row"></div></div>
+      <div class="tile t-about reveal">
+        <div class="tile-label" data-i18n="sec_about">About</div>
+        <h2 id="about-title"></h2>
+        <div class="about-text" id="about-text"></div>
+      </div>
+      <figure class="tile t-aboutimg about-photo reveal" id="about-photo"></figure>
+      <div class="tile t-logos logo-strip" id="logo-strip" hidden>
+        <div class="logo-strip-title" data-i18n="logos_title">Worked &amp; studied with</div>
+        <div class="logo-row" id="logo-row"></div>
       </div>
     </div>
   </section>
@@ -97,13 +99,6 @@
     <div class="wrap">
       <div class="sec-head reveal"><div class="sec-num"></div><h2 data-i18n="h_experience">Professional path</h2></div>
       <div class="timeline" id="timeline"></div>
-    </div>
-  </section>
-
-  <section id="results" class="results numbered" data-label="sec_results" hidden>
-    <div class="wrap">
-      <div class="sec-head reveal"><div class="sec-num"></div><h2 data-i18n="h_results">Results in numbers</h2></div>
-      <div class="result-row" id="result-row"></div>
     </div>
   </section>
 
@@ -154,7 +149,6 @@
       <div class="skills-grid">
         <div class="reveal"><h3 data-i18n="h_expertise">Expertise</h3><div id="skills-expertise"></div></div>
         <div class="reveal"><h3 data-i18n="h_tools">Tools</h3><div id="skills-tools"></div></div>
-        <div class="reveal"><h3 data-i18n="h_languages">Languages</h3><div id="skills-languages"></div></div>
       </div>
     </div>
   </section>

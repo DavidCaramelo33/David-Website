@@ -37,6 +37,7 @@ const UI = {
   h_tools: { en: "Tools", fr: "Outils" },
   h_languages: { en: "Languages", fr: "Langues" },
   logos_title: { en: "Worked & studied with", fr: "Ils m'ont fait confiance" },
+  tile_status: { en: "Availability", fr: "Disponibilité" },
 
   btn_contact: { en: "Get in touch", fr: "Me contacter" },
   btn_projects: { en: "View projects", fr: "Voir les projets" },
