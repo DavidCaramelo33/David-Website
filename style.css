@@ -488,3 +488,44 @@ body.folder-lock{overflow:hidden}
 .folder-ov.closing .svc-sheet > *{opacity:1;transform:none}
 @media (max-width:760px){.svc-grid{grid-template-columns:1fr}.svc-sheet{padding:28px 18px 32px}.svc-head .service-icon{width:52px;height:52px}}
 @media (prefers-reduced-motion:reduce){.svc-sheet > *{opacity:1!important;transform:none!important;animation:none!important}}
+
+/* ===== Phone polish ===== */
+.logo-row .dup{display:none}
+@media (max-width:680px){
+  /* header: name back, compact switch */
+  .logo-name{display:inline!important;font-size:.92rem}
+  header .nav{gap:10px;padding:0 6px 0 10px;height:56px}
+  .lang-switch{width:76px;height:32px}
+  .lang-knob{height:26px}
+  /* tighter rhythm, fewer endless screens */
+  section{padding:44px 0}
+  .sec-head{flex-direction:column;align-items:flex-start;gap:10px;margin-bottom:22px}
+  .t-photo{min-height:420px}
+  .t-intro .btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .t-intro .btns .btn{padding:12px 10px;font-size:.86rem}
+  .t-intro .btns .btn.solid{grid-column:1/-1}
+  /* results: 2 x 2 instead of four giant blocks */
+  .result-row{grid-template-columns:1fr 1fr;gap:10px}
+  .result{padding:18px 16px;border-radius:18px}
+  .result b{font-size:2rem}
+  .result span{font-size:.78rem;margin-top:6px}
+  .result::after{width:60px;height:60px;border-width:10px;right:-18px;top:-18px}
+  /* logo strip: title on top, logos glide in an endless line */
+  .t-logos{flex-direction:column;align-items:flex-start;gap:16px;padding:20px 0;overflow:hidden}
+  .logo-strip-title{padding:0 22px}
+  .logo-row{flex-wrap:nowrap;gap:0;width:max-content;animation:logo-glide 28s linear infinite}
+  .logo-row > *{margin-right:30px;flex:none}
+  .logo-row .dup{display:block}
+  .logo-row img{height:28px}
+  /* swipe rows instead of tall stacks */
+  .services,.interests,.pf-grid,.home-blog .posts,.projects{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin:0 -16px;padding:4px 16px 16px;scroll-padding:0 16px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .services::-webkit-scrollbar,.interests::-webkit-scrollbar,.pf-grid::-webkit-scrollbar,.home-blog .posts::-webkit-scrollbar,.projects::-webkit-scrollbar{display:none}
+  .services > *,.interests > *,.pf-grid > *,.home-blog .posts > *,.projects > *{flex:0 0 84%;scroll-snap-align:start;opacity:1;transform:none}
+  .service:hover,.interest:hover,.project:hover{transform:none}
+  .swipe-dots{display:flex;justify-content:center;gap:6px;margin-top:4px}
+  .swipe-dots i{width:6px;height:6px;border-radius:999px;background:var(--line);transition:width .3s,background .3s}
+  .swipe-dots i.on{width:18px;background:var(--accent)}
+}
+@keyframes logo-glide{to{transform:translateX(-50%)}}
+@media (min-width:681px){.swipe-dots{display:none}}
+@media (prefers-reduced-motion:reduce){.logo-row{animation:none!important}}

@@ -233,6 +233,23 @@ function observeCounters() {
 }
 
 /* "01 — About", "02 — Services"… numbered in order, skipping hidden sections */
+/* phone: little dots under each swipe row, showing which card you're on */
+function setupSwipeDots() {
+  [".services", ".interests", ".pf-grid", ".home-blog .posts", ".projects"].forEach(sel => document.querySelectorAll(sel).forEach(row => {
+    let dots = row.nextElementSibling;
+    if (!dots || !dots.classList.contains("swipe-dots")) { dots = document.createElement("div"); dots.className = "swipe-dots"; dots.setAttribute("aria-hidden", "true"); row.after(dots); }
+    const n = row.children.length;
+    dots.innerHTML = n > 1 ? "<i></i>".repeat(n) : "";
+    const upd = () => {
+      const w = row.children[0]?.offsetWidth || 1;
+      const i = Math.min(n - 1, Math.round(row.scrollLeft / (w + 12)));
+      [...dots.children].forEach((d, k) => d.classList.toggle("on", k === i));
+    };
+    if (!row._dots) { row.addEventListener("scroll", () => requestAnimationFrame(upd), { passive: true }); row._dots = true; }
+    upd();
+  }));
+}
+
 function numberSections() {
   let n = 0;
   document.querySelectorAll("section.numbered").forEach(s => {
@@ -274,10 +291,13 @@ function renderHome(c) {
   const logos = [...c.experience.map(j => ({ url: j.logo_url, name: j.org || j.title, link: j.link })), ...c.education.map(e => ({ url: e.logo_url, name: e.title, link: e.link }))]
     .filter(l => l.url && !seen.has(l.url) && seen.add(l.url));
   $("#logo-strip").hidden = logos.length < 3;
-  $("#logo-row").innerHTML = logos.map(l => {
-    const img = `<img src="${esc(safeUrl(l.url))}" alt="${esc(l.name)}" title="${esc(l.name)}" loading="lazy">`;
-    return l.link ? `<a href="${esc(safeUrl(l.link))}" target="_blank" rel="noopener">${img}</a>` : `<span>${img}</span>`;
+  // second copy (hidden on computers) lets the strip loop endlessly on phones
+  const logoHtml = dup => logos.map(l => {
+    const img = `<img src="${esc(safeUrl(l.url))}" alt="${dup ? "" : esc(l.name)}" title="${esc(l.name)}" loading="lazy">`;
+    const extra = dup ? ` class="dup" aria-hidden="true" tabindex="-1"` : "";
+    return l.link ? `<a href="${esc(safeUrl(l.link))}" target="_blank" rel="noopener"${extra}>${img}</a>` : `<span${extra}>${img}</span>`;
   }).join("");
+  $("#logo-row").innerHTML = logoHtml(false) + logoHtml(true);
 
   const services = p.services || [];
   $("#services").hidden = !services.length;
@@ -374,6 +394,7 @@ function renderHome(c) {
   $("#direct").innerHTML = direct.join(`<span>·</span>`);
 
   numberSections();
+  setupSwipeDots();
   observeReveal();
   observeCounters();
 }
